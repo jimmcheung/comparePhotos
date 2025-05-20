@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HEIC格式转换测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .container {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #444;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #2b6ed9;
+    }
+    .btn:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .preview {
+      max-width: 100%;
+      max-height: 400px;
+      margin-top: 20px;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    .file-info {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .progress-bar {
+      height: 20px;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      background-color: #4caf50;
+      width: 0%;
+      transition: width 0.3s;
+      text-align: center;
+      line-height: 20px;
+      color: white;
+      font-size: 14px;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .error {
+      color: #e53935;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>HEIC图像格式转换测试</h1>
+  
+  <div class="container">
+    <div class="form-group">
+      <label for="file-input">选择HEIC/HEIF图像文件：</label>
+      <input type="file" id="file-input" accept="image/heic,image/heif,.heic,.heif">
+    </div>
+    
+    <div class="form-group">
+      <label for="output-format">输出格式：</label>
+      <select id="output-format">
+        <option value="image/jpeg" selected>JPEG</option>
+        <option value="image/png">PNG</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="quality">JPEG质量：</label>
+      <input type="range" id="quality" min="0.1" max="1.0" step="0.1" value="0.85">
+      <span id="quality-value">0.85</span>
+    </div>
+    
+    <div class="actions">
+      <button id="convert-btn" class="btn" disabled>转换图像</button>
+      <button id="download-btn" class="btn" disabled>下载转换后图像</button>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+    
+    <div id="error-message" class="error"></div>
+    
+    <div class="result">
+      <div id="file-info" class="file-info"></div>
+      <img id="preview" class="preview" style="display: none;">
+    </div>
+  </div>
+
+  <script type="module">
+    // 动态加载依赖
+    async function loadDependencies() {
+      try {
+        // 从相对路径加载模块
+        const { isHeicFormat, convertHeic } = await import('/src/utils/heicHandler.js');
+        return { isHeicFormat, convertHeic };
+      } catch (error) {
+        console.error('加载依赖失败:', error);
+        displayError('模块加载失败，请确保已构建项目');
+        return null;
+      }
+    }
+
+    // 显示错误信息
+    function displayError(message) {
+      const errorElement = document.getElementById('error-message');
+      errorElement.textContent = message;
+    }
+
+    // 清除错误信息
+    function clearError() {
+      const errorElement = document.getElementById('error-message');
+      errorElement.textContent = '';
+    }
+
+    // 更新进度条
+    function updateProgress(value) {
+      const progressElement = document.getElementById('progress');
+      progressElement.style.width = `${value}%`;
+      progressElement.textContent = `${Math.round(value)}%`;
+    }
+
+    // 主函数
+    async function init() {
+      const modules = await loadDependencies();
+      if (!modules) return;
+      
+      const { isHeicFormat, convertHeic } = modules;
+      
+      const fileInput = document.getElementById('file-input');
+      const outputFormat = document.getElementById('output-format');
+      const qualityInput = document.getElementById('quality');
+      const qualityValue = document.getElementById('quality-value');
+      const convertBtn = document.getElementById('convert-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const fileInfo = document.getElementById('file-info');
+      const preview = document.getElementById('preview');
+      
+      let convertedBlob = null;
+      let convertedFileName = '';
+      
+      // 更新质量值显示
+      qualityInput.addEventListener('input', () => {
+        qualityValue.textContent = qualityInput.value;
+      });
+      
+      // 文件选择变化
+      fileInput.addEventListener('change', async () => {
+        clearError();
+        preview.style.display = 'none';
+        downloadBtn.disabled = true;
+        convertedBlob = null;
+        
+        const file = fileInput.files[0];
+        if (!file) {
+          convertBtn.disabled = true;
+          fileInfo.textContent = '';
+          return;
+        }
+        
+        // 显示文件信息
+        const fileSize = file.size < 1024 * 1024 
+          ? `${(file.size / 1024).toFixed(1)} KB` 
+          : `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+        
+        fileInfo.textContent = `文件名: ${file.name}, 大小: ${fileSize}`;
+        
+        // 检查是否为HEIC/HEIF格式
+        try {
+          const isHeic = await isHeicFormat(file);
+          if (!isHeic) {
+            displayError('警告：此文件可能不是HEIC/HEIF格式，转换可能失败');
+          }
+          convertBtn.disabled = false;
+        } catch (error) {
+          console.error('检查文件格式失败:', error);
+          displayError('文件格式检查失败，但仍可尝试转换');
+          convertBtn.disabled = false;
+        }
+      });
+      
+      // 转换按钮点击
+      convertBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        
+        clearError();
+        convertBtn.disabled = true;
+        downloadBtn.disabled = true;
+        preview.style.display = 'none';
+        updateProgress(0);
+        
+        try {
+          // 获取所选的输出格式和质量
+          const format = outputFormat.value;
+          const quality = parseFloat(qualityInput.value);
+          
+          // 转换文件
+          convertedBlob = await convertHeic(
+            file,
+            format,
+            quality,
+            updateProgress
+          );
+          
+          // 生成预览
+          const url = URL.createObjectURL(convertedBlob);
+          preview.src = url;
+          preview.style.display = 'block';
+          
+          // 设置转换后的文件名
+          const extension = format === 'image/png' ? 'png' : 'jpg';
+          convertedFileName = file.name.replace(/\.[^.]+$/, '') + '.' + extension;
+          
+          // 启用下载按钮
+          downloadBtn.disabled = false;
+          
+        } catch (error) {
+          console.error('转换失败:', error);
+          displayError(`转换失败: ${error.message || '未知错误'}`);
+        } finally {
+          convertBtn.disabled = false;
+        }
+      });
+      
+      // 下载按钮点击
+      downloadBtn.addEventListener('click', () => {
+        if (!convertedBlob || !convertedFileName) return;
+        
+        const url = URL.createObjectURL(convertedBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = convertedFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+    
+    // 初始化应用
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html> 
