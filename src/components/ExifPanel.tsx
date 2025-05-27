@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { ImageInfo } from '../stores/imageStore';
+import { formatShutterSpeed } from '../utils/exifUtils';
 
 interface Props {
   imageInfo: ImageInfo;
@@ -47,7 +48,7 @@ const ExifPanel: React.FC<Props> = ({ imageInfo }) => {
       case 'FNumber':
         return `f/${value}`;
       case 'ExposureTime':
-        return `${value}s`;
+        return formatShutterSpeed(value);
       case 'DateTimeOriginal':
         return new Date(value).toLocaleString();
       case 'ISO':
@@ -102,7 +103,7 @@ const ExifPanel: React.FC<Props> = ({ imageInfo }) => {
   });
 
   return (
-    <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center space-y-2 pointer-events-none z-10">
+    <div className="absolute bottom-9 left-0 right-0 flex flex-col items-center space-y-2 pointer-events-none z-10">
       {/* 主要信息悬浮栏 */}
       {Object.keys(primaryExif).length > 0 && (
       <div className={`max-w-[95%] md:max-w-[85%] overflow-x-auto rounded-full px-5 py-2 backdrop-blur-md text-sm

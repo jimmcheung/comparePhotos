@@ -4,6 +4,7 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { processImageFile } from '../utils/imageProcessing';
 import FormatConversionModal, { FileToConvert } from './FormatConversionModal';
 import { convertHeif, needsConversion } from '../utils/formatConverter';
+import { formatShutterSpeed } from '../utils/exifUtils';
 
 const NORMAL_IMAGE_EXT = /\.(jpg|jpeg|png|gif|webp|bmp)$/i;
 const SPECIAL_IMAGE_EXT = /\.(heic|heif)$/i;
@@ -304,7 +305,7 @@ const ImageUploader: React.FC = () => {
                       <p>{image.exif.ISO}</p>
                     )}
                     {image.exif.ExposureTime !== '0' && (
-                      <p>{image.exif.ExposureTime}s</p>
+                      <p>{formatShutterSpeed(image.exif.ExposureTime)}</p>
                     )}
                   </div>
                 </div>
@@ -350,7 +351,7 @@ const ImageUploader: React.FC = () => {
                       <p>{image.exif.ISO}</p>
                     )}
                     {image.exif.ExposureTime !== '0' && (
-                      <p>{image.exif.ExposureTime}s</p>
+                      <p>{formatShutterSpeed(image.exif.ExposureTime)}</p>
                     )}
                   </div>
                 </div>

@@ -805,7 +805,7 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
             >
               {/* 缩放按钮组和比例显示（移到exif信息上方） */}
               {showZoomControls && (
-                <div className="absolute left-1/2 transform -translate-x-1/2 bottom-48 z-30 flex flex-row items-end space-x-3 select-none mb-4">
+                <div className="absolute left-1/2 transform -translate-x-1/2 bottom-36 z-30 flex flex-row items-end space-x-3 select-none mb-4">
                   {zoomLevels.map((z, zi) => {
                     const scale = transforms[0]?.scale || 1;
                     let active = false;
@@ -1134,7 +1134,7 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
               >
                 {/* 缩放按钮组和比例显示（移到exif信息上方） */}
                 {showZoomControls && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bottom-48 z-30 flex flex-row items-end space-x-3 select-none mb-4">
+                  <div className="absolute left-1/2 transform -translate-x-1/2 bottom-36 z-30 flex flex-row items-end space-x-3 select-none mb-4">
                     {zoomLevels.map((z, zi) => {
                       const scale = transforms[index]?.scale || 1;
                       let active = false;
