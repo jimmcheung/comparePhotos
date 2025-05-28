@@ -448,7 +448,7 @@ const SettingsBar: React.FC = () => {
             : 'bg-sky-500 hover:bg-sky-600 text-white'
         } font-medium text-sm scale-105`}
       >
-        重新上传
+        重新导入
       </button>
       
       <div className="relative desktop-only">

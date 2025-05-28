@@ -390,7 +390,7 @@ const ImageUploader: React.FC = () => {
                     />
                   </svg>
                   <h3 className="mt-4 text-base font-medium">点击或拖放图片到此处</h3>
-                  <p className={`mt-2 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>支持上传图片进行对比</p>
+                  <p className={`mt-2 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>支持导入图片进行对比</p>
                   <p className={`mt-1 text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>支持格式：JPG、PNG、GIF、WebP、HEIC等</p>
                 </div>
                 <div className={`mt-4 flex items-center text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
