@@ -1,4 +1,4 @@
-# PhotoCompare 项目需求与变更记录
+# ComparePhotos 项目需求与变更记录
 
 ## 1. 功能需求与设定
 

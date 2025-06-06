@@ -283,8 +283,8 @@ const SettingsBar: React.FC = () => {
         }
       });
       
-      // 生成文件名: 照片对比+相机品牌型号+时间
-      let filename = '照片对比';
+      // 生成文件名: ComparePhotos+相机品牌型号+时间
+      let filename = 'ComparePhotos';
       
       if (images.length > 0) {
         const firstImage = images[0];

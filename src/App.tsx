@@ -114,7 +114,7 @@ const MobileSidebar: React.FC<{
                 <span>@Jim超爱玩</span>
               </a>
               <span>•</span>
-              <span className="text-sm opacity-60">v1.1.8</span>
+              <span className="text-sm opacity-60">v1.1.9</span>
             </div>
           </div>
         </div>
@@ -223,7 +223,7 @@ const App: React.FC = () => {
           
             <div className="flex items-center">
               <h1 className={`text-xl font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                PhotoCompare
+                ComparePhotos
               </h1>
               <button 
                 onClick={() => setShowInfo(true)} 
@@ -408,7 +408,7 @@ const App: React.FC = () => {
               <span className="text-sm opacity-60">•</span>
               <span className="text-sm opacity-60">© {new Date().getFullYear()}</span>
               <span className="text-sm opacity-60">•</span>
-              <span className="text-sm opacity-60">v1.1.8</span>
+              <span className="text-sm opacity-60">v1.1.9</span>
               <span className="text-sm opacity-60">•</span>
               <button
                 className="text-sm text-sky-500 hover:underline focus:outline-none focus:underline ml-2"
@@ -447,11 +447,11 @@ const App: React.FC = () => {
             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-8 max-w-md w-full flex flex-col relative" onClick={e => e.stopPropagation()}>
               <span className="absolute top-2 right-3 text-2xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer" onClick={() => setShowInfo(false)}>&times;</span>
               
-              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">关于 PhotoCompare</h2>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">关于 ComparePhotos</h2>
               
               <div className="mb-4">
                 <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">版本信息</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">当前版本: v1.1.8</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">当前版本: v1.1.9</p>
               </div>
               
               <div className="mb-4">

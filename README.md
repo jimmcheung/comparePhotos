@@ -1,8 +1,8 @@
-# PhotoCompare - 照片对比工具
+# ComparePhotos
 
 一个用于对比多张照片细节的 Web 应用，支持图片同步缩放、平移、EXIF 信息显示等功能。
 
-**在线体验：** [https://jimmcheung.github.io/photoCompare/](https://jimmcheung.github.io/photoCompare/)
+**在线体验：** [https://jimmcheung.github.io/comparePhotos/](https://jimmcheung.github.io/comparePhotos/)
 
 ## 功能特点
 
@@ -47,8 +47,8 @@
 
 1. 克隆项目：
 ```bash
-git clone https://github.com/jimmcheung/photoCompare.git
-cd photoCompare
+git clone https://github.com/jimmcheung/comparePhotos.git
+cd comparePhotos
 ```
 
 2. 安装依赖：
@@ -89,7 +89,7 @@ npm run build
 
 ## 版本管理
 
-当前版本：v1.1.8
+当前版本：v1.1.9
 
 版本号说明：
 - 主版本号：不兼容的 API 修改
@@ -101,6 +101,12 @@ npm run build
 2. 运行 `npm run version` 更新页面显示
 
 ## 更新日志
+
+### v1.1.9 (2024-06-XX)
+- 更新项目名称为 ComparePhotos
+- 统一所有文件中的项目名称引用
+- 更新 GitHub 仓库链接和部署地址
+- 优化文档结构和说明
 
 ### v1.1.8 (2024-06-XX)
 - 新增关键帧功能：支持多帧缩放/平移动画，自动记录、平滑切换、快捷键切换与自动播放
@@ -119,7 +125,7 @@ npm run build
 2. 推送代码到仓库
 3. 在仓库设置中启用 GitHub Pages
 
-当前部署地址：[https://jimmcheung.github.io/photoCompare/](https://jimmcheung.github.io/photoCompare/)
+当前部署地址：[https://jimmcheung.github.io/comparePhotos/](https://jimmcheung.github.io/comparePhotos/)
 
 ### Vercel
 1. 注册 Vercel 账号
