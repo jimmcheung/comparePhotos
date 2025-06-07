@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Settings } from '../types';
+import { Settings, ThemeMode } from '../types';
 import { persist } from 'zustand/middleware';
 
 interface ExifSettings {
@@ -16,7 +16,7 @@ interface ExifSettings {
 }
 
 interface SettingsStore extends Settings {
-  darkMode: boolean;
+  themeMode: ThemeMode;
   syncZoom: boolean;
   syncDraw: boolean;
   presentationMode: boolean;
@@ -25,7 +25,9 @@ interface SettingsStore extends Settings {
   exifSettings: ExifSettings;
   showZoomControls: boolean;
   showExifInfo: boolean;
-  toggleDarkMode: () => void;
+  borderRadius: string;
+  gridGap: string;
+  setThemeMode: (mode: ThemeMode) => void;
   toggleSyncZoom: () => void;
   toggleSyncDraw: () => void;
   togglePresentationMode: () => void;
@@ -35,12 +37,16 @@ interface SettingsStore extends Settings {
   toggleAllExifSettings: (value: boolean) => void;
   toggleShowZoomControls: () => void;
   toggleShowExifInfo: () => void;
+  setBorderRadius: (value: string) => void;
+  setGridGap: (value: string) => void;
 }
 
 export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set) => ({
-  darkMode: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+  themeMode: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches 
+    ? 'dark' 
+    : 'light',
   syncZoom: true,
   syncDraw: false,
   presentationMode: false,
@@ -60,7 +66,9 @@ export const useSettingsStore = create<SettingsStore>()(
   },
   showZoomControls: false,
   showExifInfo: true,
-  toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+  borderRadius: '0.5rem',
+  gridGap: '1rem',
+  setThemeMode: (mode) => set({ themeMode: mode }),
   toggleSyncZoom: () => set((state) => ({ syncZoom: !state.syncZoom })),
   toggleSyncDraw: () => set((state) => ({ syncDraw: !state.syncDraw })),
   togglePresentationMode: () => set((state) => ({ presentationMode: !state.presentationMode })),
@@ -85,11 +93,13 @@ export const useSettingsStore = create<SettingsStore>()(
   }),
   toggleShowZoomControls: () => set((state) => ({ showZoomControls: !state.showZoomControls })),
   toggleShowExifInfo: () => set((state) => ({ showExifInfo: !state.showExifInfo })),
+  setBorderRadius: (value) => set({ borderRadius: value }),
+  setGridGap: (value) => set({ gridGap: value }),
     }),
     {
       name: 'photo-compare-settings',
       partialize: (state) => ({
-        darkMode: state.darkMode,
+        themeMode: state.themeMode,
         syncZoom: state.syncZoom,
         syncDraw: state.syncDraw,
         presentationMode: state.presentationMode,
@@ -98,6 +108,8 @@ export const useSettingsStore = create<SettingsStore>()(
         exifSettings: state.exifSettings,
         showZoomControls: state.showZoomControls,
         showExifInfo: state.showExifInfo,
+        borderRadius: state.borderRadius,
+        gridGap: state.gridGap,
       }),
     }
   )

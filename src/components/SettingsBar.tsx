@@ -18,7 +18,8 @@ interface TooltipProps {
 // 工具提示组件
 const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { darkMode } = useSettingsStore();
+  const { themeMode } = useSettingsStore();
+  const isDarkTheme = themeMode === 'dark';
   
   return (
     <div 
@@ -30,7 +31,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
       {isVisible && (
         <div 
           className={`absolute top-full left-1/2 transform -translate-x-1/2 translate-y-1 px-2 py-1 text-xs rounded whitespace-nowrap z-50 mt-1
-            ${darkMode 
+            ${isDarkTheme 
               ? 'bg-gray-800 text-gray-200 border border-gray-700' 
               : 'bg-white text-gray-700 border border-gray-200'
             } shadow-lg`}
@@ -38,7 +39,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
           {text}
           <div 
             className={`absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent 
-              ${darkMode 
+              ${isDarkTheme 
                 ? 'border-b-gray-800' 
                 : 'border-b-white'
               }`} 
@@ -49,8 +50,9 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
   );
 };
 
-const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }) => {
-  const { exifSettings, toggleExifSetting, toggleAllExifSettings, showZoomControls, toggleShowZoomControls, darkMode, showExifInfo, toggleShowExifInfo } = useSettingsStore();
+const ExifSettingsPanel = React.forwardRef<HTMLDivElement, ExifSettingsPanelProps>(({ isOpen, onClose }, ref) => {
+  const { exifSettings, toggleExifSetting, toggleAllExifSettings, showZoomControls, toggleShowZoomControls, themeMode, showExifInfo, toggleShowExifInfo, borderRadius, setBorderRadius, gridGap, setGridGap } = useSettingsStore();
+  const isDarkTheme = themeMode === 'dark';
 
   // 动画控制
   const [shouldRender, setShouldRender] = React.useState(isOpen);
@@ -65,14 +67,14 @@ const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }
       return () => cancelAnimationFrame(raf);
     } else if (shouldRender) {
       // 关闭时也使用requestAnimationFrame确保动画流畅
-      const raf = requestAnimationFrame(() => setAnimating(false));
+      setAnimating(false);
       const timer = setTimeout(() => setShouldRender(false), 320);
       return () => {
-        cancelAnimationFrame(raf);
         clearTimeout(timer);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, shouldRender]);
+
   if (!shouldRender) return null;
 
   const displayNames: { [key: string]: string } = {
@@ -98,13 +100,44 @@ const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }
   const primaryChecked = primaryKeys.every(key => exifSettings[key as keyof typeof exifSettings]);
   const secondaryChecked = secondaryKeys.every(key => exifSettings[key as keyof typeof exifSettings]);
 
+  // 处理数值调整的通用函数
+  const handleArrowKeys = (e: React.KeyboardEvent, currentValue: string, setter: (value: string) => void) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault(); // 防止光标移动
+      
+      // 解析当前值
+      let numericPart = parseFloat(currentValue);
+      let unit = currentValue.replace(/[0-9.-]/g, '');
+      
+      // 如果没有单位，默认为rem
+      if (!unit) unit = 'rem';
+      
+      // 如果无法解析为数字，使用0作为基准
+      if (isNaN(numericPart)) numericPart = 0;
+      
+      // 根据按键调整数值
+      if (e.key === 'ArrowUp') {
+        numericPart += 0.1;
+      } else {
+        numericPart = Math.max(0, numericPart - 0.1);
+      }
+      
+      // 格式化为最多1位小数
+      numericPart = Math.round(numericPart * 10) / 10;
+      
+      // 更新值
+      setter(`${numericPart}${unit}`);
+    }
+  };
+
   return ReactDOM.createPortal(
     <div
-      className={
-        `fixed right-8 top-20 min-w-[260px] max-w-[90vw] md:max-w-[400px] max-h-[80vh] overflow-y-auto rounded-3xl px-7 py-4 backdrop-blur-lg text-sm shadow-lg shadow-black/10 transition-all duration-300 scrollbar-hide pointer-events-auto select-none z-[2000] 
-        ${darkMode ? 'bg-gray-900/95 text-gray-100 border border-gray-700' : 'bg-white/80 text-gray-700 border border-gray-200'}`
-      }
+      ref={ref}
+      className="fixed right-[17rem] top-20 w-[272px] max-w-[90vw] md:max-w-[400px] max-h-[80vh] overflow-y-auto rounded-3xl px-7 py-4 backdrop-blur-lg text-sm shadow-lg shadow-black/10 transition-all duration-300 scrollbar-hide pointer-events-auto select-none z-[2000]"
       style={{
+        background: 'var(--control-bg)',
+        color: 'var(--control-text)',
+        border: '1px solid var(--control-border)',
         opacity: animating ? 1 : 0,
         transform: animating ? 'scale(1) translateY(0px)' : 'scale(0.95) translateY(40px)',
         transition: 'opacity 0.32s cubic-bezier(.4,0,.2,1), transform 0.32s cubic-bezier(.4,0,.2,1)',
@@ -112,14 +145,11 @@ const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }
       }}
     >
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">显示设置</h3>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
-          <span className="text-lg">×</span>
-        </button>
+        <h3 className="text-base font-semibold" style={{ color: 'var(--control-text)' }}>显示设置</h3>
       </div>
       {/* EXIF信息标题和总开关 */}
       <div className="flex items-center justify-between mt-1 mb-2">
-        <span className="text-sm font-semibold text-gray-700 dark:text-gray-100">EXIF信息</span>
+        <span className="text-sm font-semibold" style={{ color: 'var(--control-text)' }}>EXIF信息</span>
         <label className="relative inline-flex items-center cursor-pointer select-none">
           <input
             type="checkbox"
@@ -127,11 +157,15 @@ const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }
             onChange={toggleShowExifInfo}
             className="sr-only peer"
           />
-          <div className={`w-11 h-6 bg-gray-300 dark:bg-gray-800 rounded-full peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50 transition-colors duration-200
-            ${showExifInfo ? 'bg-sky-500' : darkMode ? 'bg-gray-800' : 'bg-gray-300'}`}
+          <div className="w-11 h-6 rounded-full peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50 transition-colors duration-200"
+            style={{
+              background: showExifInfo ? 'var(--control-highlight)' : 'var(--control-border)'
+            }}
           >
-            <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200
-              ${showExifInfo ? 'translate-x-5' : 'translate-x-0'}`}
+            <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200"
+              style={{
+                transform: showExifInfo ? 'translateX(1.25rem)' : 'translateX(0)'
+              }}
             />
           </div>
         </label>
@@ -222,7 +256,7 @@ const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }
             className="sr-only peer"
           />
           <div className={`w-11 h-6 bg-gray-300 dark:bg-gray-800 rounded-full peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50 transition-colors duration-200
-            ${showZoomControls ? 'bg-sky-500' : darkMode ? 'bg-gray-800' : 'bg-gray-300'}`}
+             ${showZoomControls ? 'bg-sky-500' : isDarkTheme ? 'bg-gray-800' : 'bg-gray-300'}`}
           >
             <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200
               ${showZoomControls ? 'translate-x-5' : 'translate-x-0'}`}
@@ -230,19 +264,89 @@ const ExifSettingsPanel: React.FC<ExifSettingsPanelProps> = ({ isOpen, onClose }
           </div>
         </label>
       </div>
+      
+      {/* 圆角和间距设置合并为一组 */}
+      <div className="border-t border-gray-200 dark:border-gray-700 my-3" />
+      <div className="flex flex-col mt-1 mb-1">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-100">圆角大小</span>
+            <button
+              type="button"
+              onClick={() => setBorderRadius('0.5rem')}
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="恢复默认圆角"
+              tabIndex={-1}
+              style={{ lineHeight: 0 }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+            </button>
+          </div>
+          <input
+            type="text"
+            value={borderRadius}
+            onChange={(e) => setBorderRadius(e.target.value)}
+            onKeyDown={(e) => handleArrowKeys(e, borderRadius, setBorderRadius)}
+            className={`w-20 px-3 py-1 text-sm text-center rounded-full border ${
+              isDarkTheme 
+                ? 'bg-gray-800 border-gray-700 text-gray-100 focus:border-sky-500' 
+                : 'bg-white border-gray-300 text-gray-800 focus:border-sky-500'
+            } focus:outline-none focus:ring-1 focus:ring-sky-500`}
+            placeholder="0.5rem"
+          />
+        </div>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-100">间距大小</span>
+            <button
+              type="button"
+              onClick={() => setGridGap('1rem')}
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="恢复默认间距"
+              tabIndex={-1}
+              style={{ lineHeight: 0 }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+            </button>
+          </div>
+          <input
+            type="text"
+            value={gridGap}
+            onChange={(e) => setGridGap(e.target.value)}
+            onKeyDown={(e) => handleArrowKeys(e, gridGap, setGridGap)}
+            className={`w-20 px-3 py-1 text-sm text-center rounded-full border ${
+              isDarkTheme 
+                ? 'bg-gray-800 border-gray-700 text-gray-100 focus:border-sky-500' 
+                : 'bg-white border-gray-300 text-gray-800 focus:border-sky-500'
+            } focus:outline-none focus:ring-1 focus:ring-sky-500`}
+            placeholder="1rem"
+          />
+        </div>
+        <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          可使用px、rem或百分比
+        </div>
+      </div>
     </div>,
     document.body
   );
-};
+});
 
 const SettingsBar: React.FC = () => {
-  const { darkMode, toggleDarkMode, demoMode, toggleDemoMode } = useSettingsStore();
+  const { themeMode, toggleDemoMode, demoMode } = useSettingsStore();
   const { images, addImages, clearImages } = useImageStore();
   const [showExifSettings, setShowExifSettings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const settingsPanelRef = useRef<HTMLDivElement>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const isDarkTheme = themeMode === 'dark';
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -273,7 +377,7 @@ const SettingsBar: React.FC = () => {
       // 生成高质量截图
       const blob = await domtoimage.toBlob(mainContent, {
         quality: 0.95,
-        bgcolor: darkMode ? '#000000' : '#f9fafb',
+        bgcolor: isDarkTheme ? '#000000' : '#f9fafb',
         height: mainContent.scrollHeight,
         width: mainContent.scrollWidth,
         style: {
@@ -329,7 +433,9 @@ const SettingsBar: React.FC = () => {
     const handleClick = (e: MouseEvent) => {
       if (
         settingsPanelRef.current &&
-        !settingsPanelRef.current.contains(e.target as Node)
+        !settingsPanelRef.current.contains(e.target as Node) &&
+        settingsButtonRef.current &&
+        !settingsButtonRef.current.contains(e.target as Node)
       ) {
         setShowSettings(false);
       }
@@ -345,42 +451,15 @@ const SettingsBar: React.FC = () => {
 
   return (
     <div className="flex items-center space-x-4 setting-bar">
-      {/* 截图按钮 */}
-      <div className="relative">
-        <Tooltip text="截图">
-          <button
-            onClick={captureScreenshot}
-            disabled={isCapturing}
-            className={`p-3 rounded-full backdrop-blur-md transition-all duration-200 border font-medium flex items-center
-              ${darkMode 
-                ? 'bg-gray-900 hover:bg-gray-800 text-white border-gray-700' 
-                : 'bg-sky-500/10 hover:bg-sky-500/20 text-gray-900 border-gray-200'}
-              ${isCapturing ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <svg 
-              className="w-5 h-5" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-          </button>
-        </Tooltip>
-      </div>
-
       <div className="relative">
         <Tooltip text="显示设置">
           <button
+            ref={settingsButtonRef}
             onClick={() => setShowSettings(v => !v)}
-            className={`p-3 rounded-full backdrop-blur-md transition-all duration-200 border font-medium flex items-center
-              ${darkMode 
-                ? 'bg-gray-900 hover:bg-gray-800 text-white border-gray-700' 
-                : 'bg-sky-500/10 hover:bg-sky-500/20 text-gray-900 border-gray-200'}`}
+            className={`p-3 rounded-full backdrop-blur-md transition-all duration-200 font-medium flex items-center
+              ${isDarkTheme 
+                ? 'bg-gray-900 hover:bg-gray-800 text-white' 
+                : 'bg-sky-500/10 hover:bg-sky-500/20 text-gray-900'}`}
           >
             <svg 
               className="w-5 h-5" 
@@ -396,15 +475,11 @@ const SettingsBar: React.FC = () => {
             </svg>
           </button>
         </Tooltip>
-        {showSettings && (
-          <div
-            ref={settingsPanelRef}
-            style={{position: 'absolute', right: 0, top: '100%', zIndex: 2000}}
-            onMouseDown={e => e.stopPropagation()}
-          >
-            <ExifSettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
-          </div>
-        )}
+        <ExifSettingsPanel 
+          ref={settingsPanelRef}
+          isOpen={showSettings} 
+          onClose={() => setShowSettings(false)} 
+        />
       </div>
 
       <Tooltip text="演示模式">
@@ -413,7 +488,7 @@ const SettingsBar: React.FC = () => {
           className={`p-3 rounded-full backdrop-blur-md transition-all duration-200 ${
             demoMode 
               ? 'bg-sky-600 hover:bg-sky-700 text-white' 
-              : darkMode 
+              : isDarkTheme 
                 ? 'bg-gray-900 hover:bg-gray-800 text-white' 
                 : 'bg-sky-500/10 hover:bg-sky-500/20 text-gray-900 dark:text-white'
           } font-medium desktop-only`}
@@ -433,19 +508,19 @@ const SettingsBar: React.FC = () => {
       </Tooltip>
 
       <input
-        ref={fileInputRef}
         type="file"
         multiple
         accept="image/*"
         className="hidden"
-        onChange={(e) => handleFileUpload(e.target.files)}
+        ref={fileInputRef}
+        onChange={e => handleFileUpload(e.target.files)}
       />
       <button
         onClick={() => fileInputRef.current?.click()}
         className={`px-7 py-3 rounded-full backdrop-blur-md transition-all duration-200 ${
-          darkMode 
-            ? 'bg-sky-600 hover:bg-sky-700 text-white' 
-            : 'bg-sky-500 hover:bg-sky-600 text-white'
+          isDarkTheme 
+            ? 'bg-[#2458d0] hover:bg-[#1c46af] text-white' 
+            : 'bg-[#2458d0] hover:bg-[#1c46af] text-white'
         } font-medium text-sm scale-105`}
       >
         重新导入
@@ -473,7 +548,7 @@ const SettingsBar: React.FC = () => {
           <button
             onClick={() => document.getElementById('add-image-input')?.click()}
             className={`p-3 rounded-full backdrop-blur-md transition-all duration-200 ${
-              darkMode 
+              isDarkTheme 
                 ? 'bg-gray-900 hover:bg-gray-800 text-white' 
                 : 'bg-sky-500/10 hover:bg-sky-500/20 text-gray-900'
             } font-medium`}

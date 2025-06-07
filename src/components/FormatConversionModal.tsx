@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Dispatch, SetStateAction } from 'react';
 import { useSettingsStore } from '../stores/settingsStore';
 
 export interface FileToConvert {
@@ -13,9 +13,13 @@ interface FormatConversionModalProps {
   isOpen: boolean;
   files: FileToConvert[];
   onClose: () => void;
-  onConfirm: (outputFormat: 'image/jpeg' | 'image/png', quality: number) => void;
+  onConfirm: () => void;
   onCancel: () => void;
   isConverting: boolean;
+  outputFormat: 'image/jpeg' | 'image/png';
+  setOutputFormat: Dispatch<SetStateAction<'image/jpeg' | 'image/png'>>;
+  quality: number;
+  setQuality: Dispatch<SetStateAction<number>>;
 }
 
 const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
@@ -24,12 +28,14 @@ const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
   onClose,
   onConfirm,
   onCancel,
-  isConverting
+  isConverting,
+  outputFormat,
+  setOutputFormat,
+  quality,
+  setQuality
 }) => {
-  const { darkMode } = useSettingsStore();
-  
-  const [outputFormat, setOutputFormat] = useState<'image/jpeg' | 'image/png'>('image/jpeg');
-  const [quality, setQuality] = useState(0.85);
+  const { themeMode } = useSettingsStore();
+  const isDarkTheme = themeMode === 'dark';
   
   if (!isOpen) return null;
 
@@ -42,7 +48,7 @@ const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'pending':
-        return { label: '等待转换', color: darkMode ? 'text-gray-400' : 'text-gray-500' };
+        return { label: '等待转换', color: isDarkTheme ? 'text-gray-400' : 'text-gray-500' };
       case 'converting':
         return { label: '转换中', color: 'text-sky-500' };
       case 'success':
@@ -74,8 +80,12 @@ const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div 
-        className={`w-full max-w-lg rounded-xl shadow-2xl 
-          ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-800'}`}
+        className="w-full max-w-lg rounded-xl shadow-2xl"
+        style={{
+          background: 'var(--control-bg)',
+          color: 'var(--control-text)',
+          border: '1px solid var(--control-border)'
+        }}
       >
         <div className="p-6">
           <h2 className="text-xl font-semibold mb-4">HEIC/HEIF格式图片需要进行转换</h2>
@@ -88,7 +98,12 @@ const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
               <select
                 value={outputFormat}
                 onChange={e => setOutputFormat(e.target.value as 'image/jpeg' | 'image/png')}
-                className={`border rounded px-2 py-1 ${darkMode ? 'bg-gray-800 text-gray-100 border-gray-700' : 'bg-white border-gray-300'}`}
+                className="border rounded px-2 py-1"
+                style={{
+                  background: 'var(--control-bg)',
+                  color: 'var(--control-text)',
+                  borderColor: 'var(--control-border)'
+                }}
               >
                 <option value="image/jpeg">JPEG</option>
                 <option value="image/png">PNG</option>
@@ -111,23 +126,30 @@ const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
             </div>
           </div>
           
-          <div className={`mt-4 mb-6 rounded-lg overflow-hidden border 
-            ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}
+          <div className="mt-4 mb-6 rounded-lg overflow-hidden border"
+            style={{
+              borderColor: 'var(--control-border)',
+              background: 'var(--control-bg)'
+            }}
           >
             <div className="max-h-64 overflow-y-auto">
               <table className="w-full">
-                <thead className={`text-xs ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                  <tr>
-                    <th className="px-4 py-2 text-left">文件名</th>
-                    <th className="px-4 py-2 text-left">格式</th>
-                    <th className="px-4 py-2 text-right">状态</th>
+                <thead>
+                  <tr style={{
+                    background: isDarkTheme ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)'
+                  }}>
+                    <th className="px-4 py-2 text-left text-xs">文件名</th>
+                    <th className="px-4 py-2 text-left text-xs">格式</th>
+                    <th className="px-4 py-2 text-right text-xs">状态</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y"
+                  style={{ borderColor: 'var(--control-border)' }}
+                >
                   {files.map((file, index) => {
                     const statusInfo = getStatusInfo(file.status);
                     return (
-                      <tr key={index} className={darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
+                      <tr key={index} className="hover:bg-black/5 dark:hover:bg-white/5">
                         <td className="px-4 py-3 text-sm truncate max-w-[180px]">{file.file.name}</td>
                         <td className="px-4 py-3 text-sm">{getFileTypeLabel(file.type)}</td>
                         <td className="px-4 py-3 text-sm text-right">
@@ -171,15 +193,17 @@ const FormatConversionModal: React.FC<FormatConversionModalProps> = ({
               <>
                 <button
                   onClick={onCancel}
-                  className={`px-4 py-2 rounded text-sm font-medium
-                    ${darkMode 
-                      ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                  className="px-4 py-2 rounded text-sm font-medium"
+                  style={{
+                    background: 'var(--control-bg)',
+                    color: 'var(--control-text)',
+                    border: '1px solid var(--control-border)'
+                  }}
                 >
                   取消
                 </button>
                 <button
-                  onClick={() => onConfirm(outputFormat, quality)}
+                  onClick={onConfirm}
                   className="px-4 py-2 bg-sky-500 text-white rounded text-sm font-medium hover:bg-sky-600"
                 >
                   开始转换

@@ -7,7 +7,7 @@ import { HexColorPicker } from 'react-colorful';
 import ReactDOM from 'react-dom';
 import { useSettingsStore } from '../stores/settingsStore';
 
-const PRESET_COLORS = ['#FF3B30', '#FFD60A', '#007AFF'];
+const PRESET_COLORS = ['#FF3B30', '#FFD60A', '#2458d0'];
 const STROKE_WIDTHS = [2, 4, 8];
 const TOOLBAR_HEIGHT = 72;
 const TOOLBAR_MIN_WIDTH = 480;
@@ -42,7 +42,7 @@ interface TooltipProps {
 }
 const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { darkMode } = useSettingsStore();
+  const { themeMode } = useSettingsStore();
   return (
     <div
       className="relative inline-block"
@@ -53,7 +53,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
       {isVisible && (
         <div
           className={`absolute top-full left-1/2 transform -translate-x-1/2 translate-y-1 px-2 py-1 text-xs rounded whitespace-nowrap z-50 mt-1
-            ${darkMode
+            ${themeMode === 'dark'
               ? 'bg-gray-800 text-gray-200 border border-gray-700'
               : 'bg-white text-gray-700 border border-gray-200'
             } shadow-lg`}
@@ -61,7 +61,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
           {text}
           <div
             className={`absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent
-              ${darkMode
+              ${themeMode === 'dark'
                 ? 'border-b-gray-800'
                 : 'border-b-white'
               }`}
@@ -98,7 +98,7 @@ const AnnotationToolbar: React.FC = () => {
   const [showFontMenu, setShowFontMenu] = useState(false);
   const fontBtnRef = useRef<HTMLButtonElement>(null);
   const [fontMenuPos, setFontMenuPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
-  const { darkMode } = useSettingsStore();
+  const { themeMode } = useSettingsStore();
 
   React.useEffect(() => {
     if (annotationToolbar.visible) {
@@ -156,10 +156,10 @@ const AnnotationToolbar: React.FC = () => {
     width: 'fit-content',
     height: TOOLBAR_HEIGHT,
     borderRadius: TOOLBAR_RADIUS,
-    background: darkMode ? 'rgba(24, 26, 32, 0.92)' : 'rgba(255,255,255,0.92)',
+    background: themeMode === 'dark' ? 'rgba(0, 0, 0, 0.92)' : (themeMode === 'green' || themeMode === 'blue' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255,255,255,0.92)'),
     backdropFilter: 'blur(16px) saturate(1.5)',
-    boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.38)' : '0 8px 32px rgba(0,0,0,0.18)',
-    border: darkMode ? '1.5px solid rgba(80,80,100,0.18)' : '1.5px solid rgba(180,180,200,0.13)',
+    boxShadow: themeMode === 'dark' ? '0 8px 32px rgba(0,0,0,0.38)' : '0 8px 32px rgba(0,0,0,0.18)',
+    border: themeMode === 'dark' ? '1.5px solid rgba(80,80,100,0.18)' : '1.5px solid rgba(180,180,200,0.13)',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,7 +176,7 @@ const AnnotationToolbar: React.FC = () => {
     transition: 'opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1)',
     padding: '0 36px',
     boxSizing: 'border-box',
-    color: darkMode ? '#e5e7eb' : '#333',
+    color: themeMode === 'dark' ? '#e5e7eb' : '#333',
   };
 
   const palettePopoverStyle: React.CSSProperties = {
@@ -401,13 +401,13 @@ const AnnotationToolbar: React.FC = () => {
             padding: 0,
             cursor: 'pointer',
             fontSize: size,
-            color: annotationFontSize === size ? '#007AFF' : '#333',
+            color: annotationFontSize === size ? '#2458d0' : '#333',
           }}
           title={`字体${size}`}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px #007AFF66'}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = annotationFontSize === size ? '0 0 0 3px #007AFF66' : 'none'}
-          onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #007AFF66'}
-          onBlur={e => e.currentTarget.style.boxShadow = annotationFontSize === size ? '0 0 0 3px #007AFF66' : 'none'}
+          onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px #2458d066'}
+          onMouseLeave={e => e.currentTarget.style.boxShadow = annotationFontSize === size ? '0 0 0 3px #2458d066' : 'none'}
+          onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #2458d066'}
+          onBlur={e => e.currentTarget.style.boxShadow = annotationFontSize === size ? '0 0 0 3px #2458d066' : 'none'}
         >
           T
         </button>
@@ -439,14 +439,14 @@ const AnnotationToolbar: React.FC = () => {
                   ...btnBase,
                   background: annotationTool === tool.type ? '#e6f0ff' : 'transparent',
                   color: annotationTool === tool.type
-                    ? (darkMode ? '#60a5fa' : '#007AFF')
-                    : (darkMode ? '#e5e7eb' : '#333'),
-                  boxShadow: annotationTool === tool.type ? '0 0 0 3px #007AFF66' : undefined,
+                    ? (themeMode === 'dark' ? '#60a5fa' : '#2458d0')
+                    : (themeMode === 'dark' ? '#e5e7eb' : '#333'),
+                  boxShadow: annotationTool === tool.type ? '0 0 0 3px #2458d066' : undefined,
                 }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #007AFF66' : '0 0 0 3px #007AFF33'}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #007AFF66' : 'none'}
-                onFocus={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #007AFF66' : '0 0 0 3px #007AFF33'}
-                onBlur={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #007AFF66' : 'none'}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #2458d066' : '0 0 0 3px #2458d033'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #2458d066' : 'none'}
+                onFocus={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #2458d066' : '0 0 0 3px #2458d033'}
+                onBlur={e => e.currentTarget.style.boxShadow = annotationTool === tool.type ? '0 0 0 3px #2458d066' : 'none'}
               >
                 <span style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                   {tool.icon}
@@ -455,7 +455,7 @@ const AnnotationToolbar: React.FC = () => {
             </Tooltip>
           ))}
         </div>
-        <div className="annotation-toolbar-divider" style={{height: 36, width: 1.5, background: darkMode ? 'rgba(120,120,140,0.28)' : 'rgba(120,120,140,0.18)', margin: '0 16px'}} />
+        <div className="annotation-toolbar-divider" style={{height: 36, width: 1.5, background: themeMode === 'dark' ? 'rgba(120,120,140,0.28)' : 'rgba(120,120,140,0.18)', margin: '0 16px'}} />
         <div style={{ display: 'flex', gap: 12 }}>
           <Tooltip text="线宽">
             <button
@@ -465,7 +465,7 @@ const AnnotationToolbar: React.FC = () => {
               style={{
                 ...btnBase,
                 background: 'transparent',
-                boxShadow: showStrokeMenu ? '0 0 0 3px #007AFF66' : 'none',
+                boxShadow: showStrokeMenu ? '0 0 0 3px #2458d066' : 'none',
                 outline: 'none',
                 position: 'relative',
                 display: 'flex',
@@ -473,16 +473,16 @@ const AnnotationToolbar: React.FC = () => {
                 justifyContent: 'center',
                 padding: 0,
                 overflow: 'hidden',
-                color: darkMode ? '#e5e7eb' : '#333',
+                color: themeMode === 'dark' ? '#e5e7eb' : '#333',
               }}
-              onMouseEnter={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (darkMode ? '#60a5fa' : '#007AFF') : (darkMode ? '#e5e7eb' : '#333')); }}
-              onMouseLeave={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (darkMode ? '#60a5fa' : '#007AFF') : (darkMode ? '#e5e7eb' : '#333')); }}
-              onFocus={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (darkMode ? '#60a5fa' : '#007AFF') : (darkMode ? '#e5e7eb' : '#333')); }}
-              onBlur={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (darkMode ? '#60a5fa' : '#007AFF') : (darkMode ? '#e5e7eb' : '#333')); }}
+              onMouseEnter={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (themeMode === 'dark' ? '#60a5fa' : '#2458d0') : (themeMode === 'dark' ? '#e5e7eb' : '#333')); }}
+              onMouseLeave={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (themeMode === 'dark' ? '#60a5fa' : '#2458d0') : (themeMode === 'dark' ? '#e5e7eb' : '#333')); }}
+              onFocus={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (themeMode === 'dark' ? '#60a5fa' : '#2458d0') : (themeMode === 'dark' ? '#e5e7eb' : '#333')); }}
+              onBlur={e => { const p = e.currentTarget.querySelector('path'); if (p) p.setAttribute('stroke', annotationStrokeWidth ? (themeMode === 'dark' ? '#60a5fa' : '#2458d0') : (themeMode === 'dark' ? '#e5e7eb' : '#333')); }}
             >
               <span style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 <svg width="28" height={annotationStrokeWidth + 16} viewBox={`0 0 28 ${annotationStrokeWidth + 16}`} style={{display:'block'}}>
-                  <path d={getSinePath(28, annotationStrokeWidth + 16, 1, 1.35)} stroke={darkMode ? '#e5e7eb' : '#333'} strokeWidth={annotationStrokeWidth} fill="none" strokeLinecap="round" />
+                  <path d={getSinePath(28, annotationStrokeWidth + 16, 1, 1.35)} stroke={themeMode === 'dark' ? '#e5e7eb' : '#333'} strokeWidth={annotationStrokeWidth} fill="none" strokeLinecap="round" />
                 </svg>
               </span>
             </button>
@@ -497,15 +497,15 @@ const AnnotationToolbar: React.FC = () => {
                 left: strokeMenuPos.left,
                 top: strokeMenuPos.top,
                 width: 48,
-                background: darkMode ? 'rgba(24, 26, 32, 0.98)' : 'rgba(255,255,255,0.98)',
+                background: themeMode === 'dark' ? 'rgba(24, 26, 32, 0.98)' : 'rgba(255,255,255,0.98)',
                 borderRadius: 25,
-                boxShadow: darkMode ? '0 4px 24px rgba(0,0,0,0.38)' : '0 4px 24px rgba(0,0,0,0.13)',
+                boxShadow: themeMode === 'dark' ? '0 4px 24px rgba(0,0,0,0.38)' : '0 4px 24px rgba(0,0,0,0.13)',
                 padding: 10,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 12,
-                border: darkMode ? '1.5px solid rgba(80,80,100,0.18)' : '1.5px solid #e0e0e0',
+                border: themeMode === 'dark' ? '1.5px solid rgba(80,80,100,0.18)' : '1.5px solid #e0e0e0',
                 opacity: 1,
                 pointerEvents: 'auto',
               }}
@@ -529,13 +529,13 @@ const AnnotationToolbar: React.FC = () => {
                     cursor: 'pointer',
                   }}
                   title={`粗细${w}`}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px #007AFF66'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = annotationStrokeWidth === w ? '0 0 0 3px #007AFF66' : 'none'}
-                  onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #007AFF66'}
-                  onBlur={e => e.currentTarget.style.boxShadow = annotationStrokeWidth === w ? '0 0 0 3px #007AFF66' : 'none'}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px #2458d066'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = annotationStrokeWidth === w ? '0 0 0 3px #2458d066' : 'none'}
+                  onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #2458d066'}
+                  onBlur={e => e.currentTarget.style.boxShadow = annotationStrokeWidth === w ? '0 0 0 3px #2458d066' : 'none'}
                 >
                   <svg width="28" height={w + 16} viewBox={`0 0 28 ${w + 16}`} style={{display:'block'}}>
-                    <path d={getSinePath(28, w + 16, 1, 1.35)} stroke={annotationStrokeWidth === w ? (darkMode ? '#60a5fa' : '#007AFF') : (darkMode ? '#e5e7eb' : '#333')} strokeWidth={w} fill="none" strokeLinecap="round" />
+                    <path d={getSinePath(28, w + 16, 1, 1.35)} stroke={annotationStrokeWidth === w ? (themeMode === 'dark' ? '#60a5fa' : '#2458d0') : (themeMode === 'dark' ? '#e5e7eb' : '#333')} strokeWidth={w} fill="none" strokeLinecap="round" />
                   </svg>
                 </button>
               ))}
@@ -543,7 +543,7 @@ const AnnotationToolbar: React.FC = () => {
             document.body
           )}
         </div>
-        <div className="annotation-toolbar-divider" style={{height: 36, width: 1.5, background: darkMode ? 'rgba(120,120,140,0.28)' : 'rgba(120,120,140,0.18)', margin: '0 16px'}} />
+        <div className="annotation-toolbar-divider" style={{height: 36, width: 1.5, background: themeMode === 'dark' ? 'rgba(120,120,140,0.28)' : 'rgba(120,120,140,0.18)', margin: '0 16px'}} />
         <div style={{ display: 'flex', gap: 12 }}>
           {PRESET_COLORS.map(c => {
             return (
@@ -553,8 +553,8 @@ const AnnotationToolbar: React.FC = () => {
                   onClick={() => setAnnotationColor(c)}
                   style={{
                     ...btnBase,
-                    background: darkMode ? '#23272f' : '#fff',
-                    boxShadow: annotationColor === c ? '0 0 0 3px #007AFF66' : undefined,
+                    background: themeMode === 'dark' ? '#23272f' : '#fff',
+                    boxShadow: annotationColor === c ? '0 0 0 3px #2458d066' : undefined,
                     border: 'none',
                     outline: 'none',
                     position: 'relative',
@@ -564,10 +564,10 @@ const AnnotationToolbar: React.FC = () => {
                     padding: 0,
                     overflow: 'hidden',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #007AFF66' : '0 0 0 3px #007AFF33'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #007AFF66' : 'none'}
-                  onFocus={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #007AFF66' : '0 0 0 3px #007AFF33'}
-                  onBlur={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #007AFF66' : 'none'}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #2458d066' : '0 0 0 3px #2458d033'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #2458d066' : 'none'}
+                  onFocus={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #2458d066' : '0 0 0 3px #2458d033'}
+                  onBlur={e => e.currentTarget.style.boxShadow = annotationColor === c ? '0 0 0 3px #2458d066' : 'none'}
                 >
                   <span style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                     <span style={{display:'block',width:25,height:25,borderRadius:'50%',background:c}}></span>
@@ -582,8 +582,8 @@ const AnnotationToolbar: React.FC = () => {
               className="toolbar-btn"
               style={{
                 ...btnBase,
-                background: darkMode ? '#23272f' : '#fff',
-                boxShadow: (!PRESET_COLORS.includes(annotationColor) && customColor === annotationColor) || showPalette ? '0 0 0 3px #007AFF66' : 'none',
+                background: themeMode === 'dark' ? '#23272f' : '#fff',
+                boxShadow: (!PRESET_COLORS.includes(annotationColor) && customColor === annotationColor) || showPalette ? '0 0 0 3px #2458d066' : 'none',
                 outline: 'none',
                 position: 'relative',
                 display: 'flex',
@@ -593,10 +593,10 @@ const AnnotationToolbar: React.FC = () => {
                 overflow: 'hidden',
               }}
               onClick={() => setShowPalette(v => !v)}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px #007AFF66'}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = (!PRESET_COLORS.includes(annotationColor) && customColor === annotationColor) || showPalette ? '0 0 0 3px #007AFF66' : 'none'}
-              onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #007AFF66'}
-              onBlur={e => e.currentTarget.style.boxShadow = (!PRESET_COLORS.includes(annotationColor) && customColor === annotationColor) || showPalette ? '0 0 0 3px #007AFF66' : 'none'}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 0 3px #2458d066'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = (!PRESET_COLORS.includes(annotationColor) && customColor === annotationColor) || showPalette ? '0 0 0 3px #2458d066' : 'none'}
+              onFocus={e => e.currentTarget.style.boxShadow = '0 0 0 3px #2458d066'}
+              onBlur={e => e.currentTarget.style.boxShadow = (!PRESET_COLORS.includes(annotationColor) && customColor === annotationColor) || showPalette ? '0 0 0 3px #2458d066' : 'none'}
             >
               <span style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'}}>
                 <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" style={{display:'block',margin:'auto'}}>
@@ -611,7 +611,7 @@ const AnnotationToolbar: React.FC = () => {
             </button>
           </Tooltip>
         </div>
-        <div className="annotation-toolbar-divider" style={{height: 36, width: 1.5, background: darkMode ? 'rgba(120,120,140,0.28)' : 'rgba(120,120,140,0.18)', margin: '0 16px'}} />
+        <div className="annotation-toolbar-divider" style={{height: 36, width: 1.5, background: themeMode === 'dark' ? 'rgba(120,120,140,0.28)' : 'rgba(120,120,140,0.18)', margin: '0 16px'}} />
         <div style={{ display: 'flex', gap: 0 }}>
           <Tooltip text="清空所有标注">
             <button
@@ -621,7 +621,7 @@ const AnnotationToolbar: React.FC = () => {
               }}
               style={{
                 ...btnBase,
-                background: darkMode ? '#23272f' : '#fff',
+                background: themeMode === 'dark' ? '#23272f' : '#fff',
                 color: '#FF3B30',
                 boxShadow: 'none',
               }}

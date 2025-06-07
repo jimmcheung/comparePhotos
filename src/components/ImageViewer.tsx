@@ -19,7 +19,7 @@ interface Props {
 }
 
 const ImageViewer: React.FC<Props> = ({ images = [] }) => {
-  const { darkMode, syncZoom, demoMode, showZoomControls } = useSettingsStore();
+  const { themeMode, syncZoom, demoMode, showZoomControls, borderRadius, gridGap } = useSettingsStore();
   const { removeImage, addImages } = useImageStore();
   const {
     isAnnotateMode, annotationTool, annotationColor, annotationStrokeWidth, annotationFontSize, annotations, addAnnotation, setAnnotations, undo, redo,
@@ -563,7 +563,7 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
   // 添加 Tooltip 组件
   const Tooltip = ({ children, text }: { children: React.ReactNode; text: string }) => {
     const [isVisible, setIsVisible] = useState(false);
-    const { darkMode } = useSettingsStore();
+    const { themeMode } = useSettingsStore();
     
     return (
       <div 
@@ -575,7 +575,7 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
         {isVisible && (
           <div 
             className={`absolute top-full left-1/2 transform -translate-x-1/2 translate-y-1 px-2 py-1 text-xs rounded whitespace-nowrap z-50 mt-1 shadow-lg
-              ${darkMode 
+              ${themeMode === 'dark' 
                 ? 'bg-gray-700 text-gray-200' 
                 : 'bg-gray-100 text-gray-700'
               }`}
@@ -583,7 +583,7 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
             {text}
             <div 
               className={`absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent 
-                ${darkMode 
+                ${themeMode === 'dark' 
                   ? 'border-b-gray-700' 
                   : 'border-b-gray-100'
                 }`} 
@@ -800,8 +800,9 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
             <div
               ref={el => containerRefs.current[0] = el}
               className={`w-full h-full ${
-                darkMode ? 'bg-black' : 'bg-white'
-              } rounded-lg shadow-lg overflow-hidden relative group`}
+                themeMode === 'dark' ? 'bg-black' : 'bg-white'
+              } shadow-lg overflow-hidden relative group`}
+              style={{ borderRadius: borderRadius }}
             >
               {/* 缩放按钮组和比例显示（移到exif信息上方） */}
               {showZoomControls && (
@@ -1121,354 +1122,355 @@ const ImageViewer: React.FC<Props> = ({ images = [] }) => {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 w-full md:w-[90%] h-full items-center justify-center px-4 mx-auto" style={{
-          gridTemplateColumns: `repeat(${images.length}, minmax(0, 1fr))`
+        <div className="w-full md:w-[90%] h-[80vh] items-center justify-center px-4 mx-auto grid" style={{
+          gridTemplateColumns: `repeat(${images.length}, minmax(0, 1fr))`,
+          gap: gridGap
         }}>
           {images.map((image, index) => (
-            <div key={image.id} className="relative w-full h-full flex items-center justify-center">
-              <div
-                ref={el => containerRefs.current[index] = el}
-                className={`w-full h-[80vh] ${
-                  darkMode ? 'bg-black' : 'bg-white'
-                } rounded-lg shadow-lg overflow-hidden relative group`}
-              >
-                {/* 缩放按钮组和比例显示（移到exif信息上方） */}
-                {showZoomControls && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bottom-36 z-30 flex flex-row items-end space-x-3 select-none mb-4">
-                    {zoomLevels.map((z, zi) => {
-                      const scale = transforms[index]?.scale || 1;
-                      let active = false;
-                      if (zi === 0 && scale >= 1 && scale < 2) active = true;
-                      if (zi === 1 && scale >= 2 && scale < 5) active = true;
-                      if (zi === 2 && scale >= 5) active = true;
-                      const scaleText = Number.isInteger(scale) ? `${scale}x` : `${scale.toFixed(1)}x`;
-                      return (
-                        <button
-                          key={z}
-                          onClick={() => handleZoomButtonClick(index, zi)}
-                          className={`w-9 h-9 flex items-center justify-center rounded-full font-semibold transition-all duration-200 shadow-md
-                            border border-gray-300 dark:border-gray-700
-                            bg-white/80 dark:bg-gray-900/80 backdrop-blur-md
-                            hover:bg-sky-100/80 dark:hover:bg-gray-800/90
-                            focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-50
-                          `}
-                          style={{ minWidth: 36, minHeight: 36, maxWidth: 36, maxHeight: 36, outline: 'none', position: 'relative', transform: active ? 'scale(1.22)' : 'scale(1)' }}
-                          title={`缩放到${z}x`}
-                        >
-                          {active ? (
-                            <span className="text-gray-700 dark:text-gray-100 font-medium whitespace-nowrap text-[13px] leading-none drop-shadow-sm">{scaleText}</span>
-                          ) : (
-                            <span className="text-gray-700 dark:text-gray-200 font-medium whitespace-nowrap text-[13px] leading-none drop-shadow-sm">{z}x</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                <img
-                  ref={el => imageRefs.current[index] = el}
-                  src={image.url}
-                  alt={image.exif.FileName}
-                  className="w-full h-full object-contain select-none"
-                  style={{
-                    transform: `translate(${transforms[index]?.x || 0}px, ${transforms[index]?.y || 0}px) scale(${transforms[index]?.scale || 1})`,
-                    // 图片缩放动画效果：
-                    // transition: dragState.current.isDragging ? 'none' : 'transform 0.1s ease'
-                    // - 拖动时禁用动画
-                    // - 缩放时使用0.1s的ease缓动
-                    touchAction: 'none',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                  }}
-                  draggable={false}
-                />
-                <svg
-                  className="absolute inset-0 w-full h-full z-20"
-                  style={{
-                    transform: `translate(${transforms[index]?.x || 0}px, ${transforms[index]?.y || 0}px) scale(${transforms[index]?.scale || 1})`,
-                    pointerEvents: isAnnotateMode ? 'auto' : 'none',
-                    touchAction: 'none',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                  }}
-                  onPointerDown={isAnnotateMode ? (e => handleSvgPointerDown(e, index)) : undefined}
-                  onPointerMove={isAnnotateMode ? (e => handleSvgPointerMove(e, index)) : undefined}
-                  onPointerUp={isAnnotateMode ? (e => handleSvgPointerUp(e, index)) : undefined}
-                >
-                  {/* 已有标注 */}
-                  {(annotations[image.id] || []).map(ann => {
-                    const isSelected = selectedAnnotationId[image.id] === ann.id;
-                    if (ann.type === 'rect') {
-                      const [x1, y1, x2, y2] = ann.points;
-                      const minX = Math.min(x1, x2), minY = Math.min(y1, y2), w = Math.abs(x2-x1), h = Math.abs(y2-y1);
-                      return (
-                        <g key={ann.id}>
-                          <rect x={minX} y={minY} width={w} height={h} stroke={ann.color} strokeWidth={ann.strokeWidth} vectorEffect="non-scaling-stroke" fill="none"
-                            onPointerDown={e => { e.stopPropagation(); setSelectedAnnotationId(image.id, ann.id);
-                              // 拖动前保存撤销快照
-                              if (annotationTool === 'move') {
-                                if (syncZoomRef.current) {
-                                  images.forEach(img => useAnnotationStore.getState().pushUndo(img.id, annotations[img.id] || []));
-                                } else {
-                                  useAnnotationStore.getState().pushUndo(image.id, annotations[image.id] || []);
-                                }
-                              }
-                              setDragStart({ x: e.clientX, y: e.clientY, annId: ann.id, imgIdx: index }); }}
-                          />
-                          {annotationTool === 'move' && isSelected && (
-                            <g>
-                              <rect 
-                                x={minX-BBOX_PAD} 
-                                y={minY-BBOX_PAD} 
-                                width={w+BBOX_PAD*2} 
-                                height={h+BBOX_PAD*2} 
-                                stroke="#007AFF" 
-                                strokeWidth={2} 
-                                fill="none" 
-                                rx={BBOX_RADIUS} 
-                                strokeDasharray="4 4"
-                                style={{filter:'drop-shadow(0 0 2px #007AFF88)'}} 
-                                pointerEvents="all"
-                                onPointerDown={e => { e.stopPropagation(); setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] }); }}
-                              />
-                              <DeleteSvgButton
-                                cx={minX + w + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
-                                cy={minY - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
-                                onPointerUp={e => {
-                                  e.stopPropagation();
-                                  if (syncZoomRef.current) {
-                                    images.forEach(img => deleteAnnotation(img.id, ann.id));
-                                  } else {
-                                    deleteAnnotation(image.id, ann.id);
-                                  }
-                                }}
-                              />
-                            </g>
-                          )}
-                        </g>
-                      );
-                    }
-                    if (ann.type === 'ellipse') {
-                      const [x1, y1, x2, y2] = ann.points;
-                      const minX = Math.min(x1, x2), minY = Math.min(y1, y2), w = Math.abs(x2-x1), h = Math.abs(y2-y1);
-                      return (
-                        <g key={ann.id}>
-                          <ellipse cx={(x1+x2)/2} cy={(y1+y2)/2} rx={w/2} ry={h/2} stroke={ann.color} strokeWidth={ann.strokeWidth} vectorEffect="non-scaling-stroke" fill="none"
-                            onPointerDown={e => { e.stopPropagation(); setSelectedAnnotationId(image.id, ann.id);
-                              // 拖动前保存撤销快照
-                              if (annotationTool === 'move') {
-                                if (syncZoomRef.current) {
-                                  images.forEach(img => useAnnotationStore.getState().pushUndo(img.id, annotations[img.id] || []));
-                                } else {
-                                  useAnnotationStore.getState().pushUndo(image.id, annotations[image.id] || []);
-                                }
-                              }
-                              setDragStart({ x: e.clientX, y: e.clientY, annId: ann.id, imgIdx: index }); }}
-                          />
-                          {annotationTool === 'move' && isSelected && (
-                            <g>
-                              <rect 
-                                x={minX-BBOX_PAD} 
-                                y={minY-BBOX_PAD} 
-                                width={w+BBOX_PAD*2} 
-                                height={h+BBOX_PAD*2} 
-                                stroke="#007AFF" 
-                                strokeWidth={2} 
-                                fill="none" 
-                                rx={BBOX_RADIUS} 
-                                strokeDasharray="4 4"
-                                style={{filter:'drop-shadow(0 0 2px #007AFF88)'}} 
-                                pointerEvents="all"
-                                onPointerDown={e => { e.stopPropagation(); setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] }); }}
-                              />
-                              <DeleteSvgButton
-                                cx={minX + w + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
-                                cy={minY - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
-                                onPointerUp={e => {
-                                  e.stopPropagation();
-                                  if (syncZoomRef.current) {
-                                    images.forEach(img => deleteAnnotation(img.id, ann.id));
-                                  } else {
-                                    deleteAnnotation(image.id, ann.id);
-                                  }
-                                }}
-                              />
-                            </g>
-                          )}
-                        </g>
-                      );
-                    }
-                    if (ann.type === 'pen') {
-                      const pts = ann.points;
-                      const d = pts.length >= 4 ? `M${pts[0]},${pts[1]} ` + pts.slice(2).map((v,i) => i%2===0?`L${pts[i+2]},${pts[i+3]}`:'').join(' ') : '';
-                      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                      for (let i = 0; i < pts.length; i += 2) {
-                        minX = Math.min(minX, pts[i]);
-                        minY = Math.min(minY, pts[i+1]);
-                        maxX = Math.max(maxX, pts[i]);
-                        maxY = Math.max(maxY, pts[i+1]);
-                      }
-                      return (
-                        <g key={ann.id}>
-                          <path d={d} stroke={ann.color} strokeWidth={ann.strokeWidth} vectorEffect="non-scaling-stroke" fill="none" strokeLinejoin="round" strokeLinecap="round"
-                            onPointerDown={e => { e.stopPropagation(); setSelectedAnnotationId(image.id, ann.id);
-                              // 拖动前保存撤销快照
-                              if (annotationTool === 'move') {
-                                if (syncZoomRef.current) {
-                                  images.forEach(img => useAnnotationStore.getState().pushUndo(img.id, annotations[img.id] || []));
-                                } else {
-                                  useAnnotationStore.getState().pushUndo(image.id, annotations[image.id] || []);
-                                }
-                              }
-                              setDragStart({ x: e.clientX, y: e.clientY, annId: ann.id, imgIdx: index }); }}
-                          />
-                          {annotationTool === 'move' && isSelected && (
-                            <g>
-                              <rect 
-                                x={minX-BBOX_PAD} 
-                                y={minY-BBOX_PAD} 
-                                width={maxX-minX+BBOX_PAD*2} 
-                                height={maxY-minY+BBOX_PAD*2} 
-                                stroke="#007AFF" 
-                                strokeWidth={2} 
-                                fill="none" 
-                                rx={BBOX_RADIUS} 
-                                strokeDasharray="4 4"
-                                style={{filter:'drop-shadow(0 0 2px #007AFF88)'}} 
-                                pointerEvents="all"
-                                onPointerDown={e => { e.stopPropagation(); setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] }); }}
-                              />
-                              <DeleteSvgButton
-                                cx={maxX + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
-                                cy={minY - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
-                                onPointerUp={e => {
-                                  e.stopPropagation();
-                                  if (syncZoomRef.current) {
-                                    images.forEach(img => deleteAnnotation(img.id, ann.id));
-                                  } else {
-                                    deleteAnnotation(image.id, ann.id);
-                                  }
-                                }}
-                              />
-                            </g>
-                          )}
-                        </g>
-                      );
-                    }
-                    if (ann.type === 'text') {
-                      const [tx, ty] = ann.points;
-                      // 计算文字实际宽度
-                      const textWidth = (ann.text?.length || 0) * (ann.fontSize || 18) * 0.96; // 0.96是一个经验系数，用于估算字符宽度
-                      const w = Math.max(120, textWidth + 16); // 最小宽度120px，加上一些padding
-                      const h = 40;
-                      if (editingTextId === ann.id) {
-                        return null;
-                      }
-                      return (
-                        <g key={ann.id}>
-                          <text
-                            x={tx}
-                            y={ty}
-                            fontSize={ann.fontSize || 18}
-                            fill={ann.color}
-                            textAnchor="start"
-                            alignmentBaseline="middle"
-                            style={{ 
-                              cursor: annotationTool === 'move' ? 'move' : 'text', 
-                              userSelect: 'none', 
-                              ...(isSelected ? { filter: 'drop-shadow(0 0 2px #007AFF88)' } : {})
-                            }}
-                            onDoubleClick={() => setEditingTextId?.(ann.id)}
-                            onPointerDown={e => { 
-                              e.stopPropagation(); 
-                              if (annotationTool === 'move') {
-                                setSelectedAnnotationId(image.id, ann.id);
-                                setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] });
-                              }
-                            }}
-                          >{ann.text}</text>
-                          {annotationTool === 'move' && isSelected && (
-                            <g>
-                              <rect 
-                                x={tx-BBOX_PAD} 
-                                y={ty-h/2-BBOX_PAD} 
-                                width={w+BBOX_PAD*2} 
-                                height={h+BBOX_PAD*2} 
-                                stroke="#007AFF" 
-                                strokeWidth={2} 
-                                fill="none" 
-                                rx={BBOX_RADIUS} 
-                                strokeDasharray="4 4"
-                                style={{filter:'drop-shadow(0 0 2px #007AFF88)'}}
-                                pointerEvents="all"
-                                onPointerDown={e => { 
-                                  e.stopPropagation(); 
-                                  setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] });
-                                }}
-                              />
-                              <DeleteSvgButton
-                                cx={tx + w + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
-                                cy={ty - h/2 - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
-                                onPointerUp={e => {
-                                  e.stopPropagation();
-                                  if (syncZoomRef.current) {
-                                    images.forEach(img => deleteAnnotation(img.id, ann.id));
-                                  } else {
-                                    deleteAnnotation(image.id, ann.id);
-                                  }
-                                }}
-                              />
-                            </g>
-                          )}
-                        </g>
-                      );
-                    }
-                    return null;
+            <div
+              key={image.id}
+              ref={el => (containerRefs.current[index] = el)}
+              className="w-full h-full shadow-lg overflow-hidden relative group"
+              style={{ borderRadius: borderRadius }}
+            >
+              {/* 缩放按钮组 */}
+              {showZoomControls && (
+                <div className="absolute left-1/2 transform -translate-x-1/2 bottom-36 z-30 flex flex-row items-end space-x-3 select-none mb-4">
+                  {zoomLevels.map((z, zi) => {
+                    const scale = transforms[index]?.scale || 1;
+                    let active = false;
+                    if (zi === 0 && scale >= 1 && scale < 2) active = true;
+                    if (zi === 1 && scale >= 2 && scale < 5) active = true;
+                    if (zi === 2 && scale >= 5) active = true;
+                    // 只保留1位小数，整数不显示小数点
+                    const scaleText = Number.isInteger(scale) ? `${scale}x` : `${scale.toFixed(1)}x`;
+                    return (
+                      <button
+                        key={z}
+                        onClick={() => handleZoomButtonClick(index, zi)}
+                        className={`w-9 h-9 flex items-center justify-center rounded-full font-semibold transition-all duration-200 shadow-md
+                          border border-gray-300 dark:border-gray-700
+                          bg-white/80 dark:bg-gray-900/80 backdrop-blur-md
+                          hover:bg-sky-100/80 dark:hover:bg-gray-800/90
+                          focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-50
+                        `}
+                        style={{ minWidth: 36, minHeight: 36, maxWidth: 36, maxHeight: 36, outline: 'none', position: 'relative', transform: active ? 'scale(1.22)' : 'scale(1)' }}
+                        title={`缩放到${z}x`}
+                      >
+                        {/* 按钮内显示实时缩放比例或倍率 */}
+                        {active ? (
+                          <span className="text-gray-700 dark:text-gray-100 font-medium whitespace-nowrap text-[13px] leading-none drop-shadow-sm">{scaleText}</span>
+                        ) : (
+                          <span className="text-gray-700 dark:text-gray-200 font-medium whitespace-nowrap text-[13px] leading-none drop-shadow-sm">{z}x</span>
+                        )}
+                      </button>
+                    );
                   })}
-                  {/* 正在绘制 */}
-                  {drawing && (
-                    (syncZoomRef.current || image.id === drawing.imageId) && (
-                      (() => {
-                        if (drawing.type === 'rect') {
-                          return <rect x={Math.min(drawing.start[0], drawing.points[2])} y={Math.min(drawing.start[1], drawing.points[3])} width={Math.abs(drawing.points[2]-drawing.start[0])} height={Math.abs(drawing.points[3]-drawing.start[1])} stroke={annotationColor} strokeWidth={annotationStrokeWidth} vectorEffect="non-scaling-stroke" fill="none" pointerEvents="none" />;
-                        } else if (drawing.type === 'ellipse') {
-                          return <ellipse cx={(drawing.start[0]+drawing.points[2])/2} cy={(drawing.start[1]+drawing.points[3])/2} rx={Math.abs(drawing.points[2]-drawing.start[0])/2} ry={Math.abs(drawing.points[3]-drawing.start[1])/2} stroke={annotationColor} strokeWidth={annotationStrokeWidth} vectorEffect="non-scaling-stroke" fill="none" pointerEvents="none" />;
-                        } else if (drawing.type === 'pen' && drawing.points.length >= 4) {
-                          return <path d={`M${drawing.points[0]},${drawing.points[1]} ` + drawing.points.slice(2).map((v,i) => i%2===0?`L${drawing.points[i+2]},${drawing.points[i+3]}`:'').join(' ')} stroke={annotationColor} strokeWidth={annotationStrokeWidth} vectorEffect="non-scaling-stroke" fill="none" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />;
-                        }
-                        return null;
-                      })()
-                    )
-                  )}
-                </svg>
-                {!demoMode && (
-                  <button
-                    onClick={() => {
-                      removeImage(image.id);
-                    }}
-                    className={`absolute top-2 right-2 z-50 p-1.5 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100
-                      ${darkMode 
-                        ? 'bg-gray-800/90 text-gray-100 hover:bg-gray-700' 
-                        : 'bg-white/80 text-gray-700 hover:bg-white'}`}
-                    title="删除图片"
-                  >
-                    <svg 
-                      className="w-5 h-5" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M6 18L18 6M6 6l12 12" 
-                      />
-                    </svg>
-                  </button>
+                </div>
+              )}
+              <img
+                ref={el => (imageRefs.current[index] = el)}
+                src={image.url}
+                alt={image.exif.FileName}
+                className="w-full h-full object-contain select-none"
+                style={{
+                  transform: `translate(${transforms[index]?.x || 0}px, ${transforms[index]?.y || 0}px) scale(${transforms[index]?.scale || 1})`,
+                  // 图片缩放动画效果：
+                  // transition: dragState.current.isDragging ? 'none' : 'transform 0.1s ease'
+                  // - 拖动时禁用动画
+                  // - 缩放时使用0.1s的ease缓动
+                  touchAction: 'none',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                }}
+                draggable={false}
+              />
+              <svg
+                className="absolute inset-0 w-full h-full z-20"
+                style={{
+                  transform: `translate(${transforms[index]?.x || 0}px, ${transforms[index]?.y || 0}px) scale(${transforms[index]?.scale || 1})`,
+                  pointerEvents: isAnnotateMode ? 'auto' : 'none',
+                  touchAction: 'none',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                }}
+                onPointerDown={isAnnotateMode ? (e => handleSvgPointerDown(e, index)) : undefined}
+                onPointerMove={isAnnotateMode ? (e => handleSvgPointerMove(e, index)) : undefined}
+                onPointerUp={isAnnotateMode ? (e => handleSvgPointerUp(e, index)) : undefined}
+              >
+                {/* 已有标注 */}
+                {(annotations[image.id] || []).map(ann => {
+                  const isSelected = selectedAnnotationId[image.id] === ann.id;
+                  if (ann.type === 'rect') {
+                    const [x1, y1, x2, y2] = ann.points;
+                    const minX = Math.min(x1, x2), minY = Math.min(y1, y2), w = Math.abs(x2-x1), h = Math.abs(y2-y1);
+                    return (
+                      <g key={ann.id}>
+                        <rect x={minX} y={minY} width={w} height={h} stroke={ann.color} strokeWidth={ann.strokeWidth} vectorEffect="non-scaling-stroke" fill="none"
+                          onPointerDown={e => { e.stopPropagation(); setSelectedAnnotationId(image.id, ann.id);
+                            // 拖动前保存撤销快照
+                            if (annotationTool === 'move') {
+                              if (syncZoomRef.current) {
+                                images.forEach(img => useAnnotationStore.getState().pushUndo(img.id, annotations[img.id] || []));
+                              } else {
+                                useAnnotationStore.getState().pushUndo(image.id, annotations[image.id] || []);
+                              }
+                            }
+                            setDragStart({ x: e.clientX, y: e.clientY, annId: ann.id, imgIdx: index }); }}
+                        />
+                        {annotationTool === 'move' && isSelected && (
+                          <g>
+                            <rect 
+                              x={minX-BBOX_PAD} 
+                              y={minY-BBOX_PAD} 
+                              width={w+BBOX_PAD*2} 
+                              height={h+BBOX_PAD*2} 
+                              stroke="#007AFF" 
+                              strokeWidth={2} 
+                              fill="none" 
+                              rx={BBOX_RADIUS} 
+                              strokeDasharray="4 4"
+                              style={{filter:'drop-shadow(0 0 2px #007AFF88)'}} 
+                              pointerEvents="all"
+                              onPointerDown={e => { e.stopPropagation(); setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] }); }}
+                            />
+                            <DeleteSvgButton
+                              cx={minX + w + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
+                              cy={minY - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
+                              onPointerUp={e => {
+                                e.stopPropagation();
+                                if (syncZoomRef.current) {
+                                  images.forEach(img => deleteAnnotation(img.id, ann.id));
+                                } else {
+                                  deleteAnnotation(image.id, ann.id);
+                                }
+                              }}
+                            />
+                          </g>
+                        )}
+                      </g>
+                    );
+                  }
+                  if (ann.type === 'ellipse') {
+                    const [x1, y1, x2, y2] = ann.points;
+                    const minX = Math.min(x1, x2), minY = Math.min(y1, y2), w = Math.abs(x2-x1), h = Math.abs(y2-y1);
+                    return (
+                      <g key={ann.id}>
+                        <ellipse cx={(x1+x2)/2} cy={(y1+y2)/2} rx={w/2} ry={h/2} stroke={ann.color} strokeWidth={ann.strokeWidth} vectorEffect="non-scaling-stroke" fill="none"
+                          onPointerDown={e => { e.stopPropagation(); setSelectedAnnotationId(image.id, ann.id);
+                            // 拖动前保存撤销快照
+                            if (annotationTool === 'move') {
+                              if (syncZoomRef.current) {
+                                images.forEach(img => useAnnotationStore.getState().pushUndo(img.id, annotations[img.id] || []));
+                              } else {
+                                useAnnotationStore.getState().pushUndo(image.id, annotations[image.id] || []);
+                              }
+                            }
+                            setDragStart({ x: e.clientX, y: e.clientY, annId: ann.id, imgIdx: index }); }}
+                        />
+                        {annotationTool === 'move' && isSelected && (
+                          <g>
+                            <rect 
+                              x={minX-BBOX_PAD} 
+                              y={minY-BBOX_PAD} 
+                              width={w+BBOX_PAD*2} 
+                              height={h+BBOX_PAD*2} 
+                              stroke="#007AFF" 
+                              strokeWidth={2} 
+                              fill="none" 
+                              rx={BBOX_RADIUS} 
+                              strokeDasharray="4 4"
+                              style={{filter:'drop-shadow(0 0 2px #007AFF88)'}} 
+                              pointerEvents="all"
+                              onPointerDown={e => { e.stopPropagation(); setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] }); }}
+                            />
+                            <DeleteSvgButton
+                              cx={minX + w + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
+                              cy={minY - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
+                              onPointerUp={e => {
+                                e.stopPropagation();
+                                if (syncZoomRef.current) {
+                                  images.forEach(img => deleteAnnotation(img.id, ann.id));
+                                } else {
+                                  deleteAnnotation(image.id, ann.id);
+                                }
+                              }}
+                            />
+                          </g>
+                        )}
+                      </g>
+                    );
+                  }
+                  if (ann.type === 'pen') {
+                    const pts = ann.points;
+                    const d = pts.length >= 4 ? `M${pts[0]},${pts[1]} ` + pts.slice(2).map((v,i) => i%2===0?`L${pts[i+2]},${pts[i+3]}`:'').join(' ') : '';
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    for (let i = 0; i < pts.length; i += 2) {
+                      minX = Math.min(minX, pts[i]);
+                      minY = Math.min(minY, pts[i+1]);
+                      maxX = Math.max(maxX, pts[i]);
+                      maxY = Math.max(maxY, pts[i+1]);
+                    }
+                    return (
+                      <g key={ann.id}>
+                        <path d={d} stroke={ann.color} strokeWidth={ann.strokeWidth} vectorEffect="non-scaling-stroke" fill="none" strokeLinejoin="round" strokeLinecap="round"
+                          onPointerDown={e => { e.stopPropagation(); setSelectedAnnotationId(image.id, ann.id);
+                            // 拖动前保存撤销快照
+                            if (annotationTool === 'move') {
+                              if (syncZoomRef.current) {
+                                images.forEach(img => useAnnotationStore.getState().pushUndo(img.id, annotations[img.id] || []));
+                              } else {
+                                useAnnotationStore.getState().pushUndo(image.id, annotations[image.id] || []);
+                              }
+                            }
+                            setDragStart({ x: e.clientX, y: e.clientY, annId: ann.id, imgIdx: index }); }}
+                        />
+                        {annotationTool === 'move' && isSelected && (
+                          <g>
+                            <rect 
+                              x={minX-BBOX_PAD} 
+                              y={minY-BBOX_PAD} 
+                              width={maxX-minX+BBOX_PAD*2} 
+                              height={maxY-minY+BBOX_PAD*2} 
+                              stroke="#007AFF" 
+                              strokeWidth={2} 
+                              fill="none" 
+                              rx={BBOX_RADIUS} 
+                              strokeDasharray="4 4"
+                              style={{filter:'drop-shadow(0 0 2px #007AFF88)'}} 
+                              pointerEvents="all"
+                              onPointerDown={e => { e.stopPropagation(); setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] }); }}
+                            />
+                            <DeleteSvgButton
+                              cx={maxX + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
+                              cy={minY - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
+                              onPointerUp={e => {
+                                e.stopPropagation();
+                                if (syncZoomRef.current) {
+                                  images.forEach(img => deleteAnnotation(img.id, ann.id));
+                                } else {
+                                  deleteAnnotation(image.id, ann.id);
+                                }
+                              }}
+                            />
+                          </g>
+                        )}
+                      </g>
+                    );
+                  }
+                  if (ann.type === 'text') {
+                    const [tx, ty] = ann.points;
+                    // 计算文字实际宽度
+                    const textWidth = (ann.text?.length || 0) * (ann.fontSize || 18) * 0.96; // 0.96是一个经验系数，用于估算字符宽度
+                    const w = Math.max(120, textWidth + 16); // 最小宽度120px，加上一些padding
+                    const h = 40;
+                    if (editingTextId === ann.id) {
+                      return null;
+                    }
+                    return (
+                      <g key={ann.id}>
+                        <text
+                          x={tx}
+                          y={ty}
+                          fontSize={ann.fontSize || 18}
+                          fill={ann.color}
+                          textAnchor="start"
+                          alignmentBaseline="middle"
+                          style={{ 
+                            cursor: annotationTool === 'move' ? 'move' : 'text', 
+                            userSelect: 'none', 
+                            ...(isSelected ? { filter: 'drop-shadow(0 0 2px #007AFF88)' } : {})
+                          }}
+                          onDoubleClick={() => setEditingTextId?.(ann.id)}
+                          onPointerDown={e => { 
+                            e.stopPropagation(); 
+                            if (annotationTool === 'move') {
+                              setSelectedAnnotationId(image.id, ann.id);
+                              setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] });
+                            }
+                          }}
+                        >{ann.text}</text>
+                        {annotationTool === 'move' && isSelected && (
+                          <g>
+                            <rect 
+                              x={tx-BBOX_PAD} 
+                              y={ty-h/2-BBOX_PAD} 
+                              width={w+BBOX_PAD*2} 
+                              height={h+BBOX_PAD*2} 
+                              stroke="#007AFF" 
+                              strokeWidth={2} 
+                              fill="none" 
+                              rx={BBOX_RADIUS} 
+                              strokeDasharray="4 4"
+                              style={{filter:'drop-shadow(0 0 2px #007AFF88)'}}
+                              pointerEvents="all"
+                              onPointerDown={e => { 
+                                e.stopPropagation(); 
+                                setDraggingAnn({ imgIdx: index, annId: ann.id, start: [e.clientX, e.clientY], last: [e.clientX, e.clientY] });
+                              }}
+                            />
+                            <DeleteSvgButton
+                              cx={tx + w + BBOX_PAD + DELETE_BTN_RADIUS + DELETE_BTN_MARGIN}
+                              cy={ty - h/2 - BBOX_PAD - DELETE_BTN_RADIUS - DELETE_BTN_MARGIN}
+                              onPointerUp={e => {
+                                e.stopPropagation();
+                                if (syncZoomRef.current) {
+                                  images.forEach(img => deleteAnnotation(img.id, ann.id));
+                                } else {
+                                  deleteAnnotation(image.id, ann.id);
+                                }
+                              }}
+                            />
+                          </g>
+                        )}
+                      </g>
+                    );
+                  }
+                  return null;
+                })}
+                {/* 正在绘制 */}
+                {drawing && (
+                  (syncZoomRef.current || image.id === drawing.imageId) && (
+                    (() => {
+                      if (drawing.type === 'rect') {
+                        return <rect x={Math.min(drawing.start[0], drawing.points[2])} y={Math.min(drawing.start[1], drawing.points[3])} width={Math.abs(drawing.points[2]-drawing.start[0])} height={Math.abs(drawing.points[3]-drawing.start[1])} stroke={annotationColor} strokeWidth={annotationStrokeWidth} vectorEffect="non-scaling-stroke" fill="none" pointerEvents="none" />;
+                      } else if (drawing.type === 'ellipse') {
+                        return <ellipse cx={(drawing.start[0]+drawing.points[2])/2} cy={(drawing.start[1]+drawing.points[3])/2} rx={Math.abs(drawing.points[2]-drawing.start[0])/2} ry={Math.abs(drawing.points[3]-drawing.start[1])/2} stroke={annotationColor} strokeWidth={annotationStrokeWidth} vectorEffect="non-scaling-stroke" fill="none" pointerEvents="none" />;
+                      } else if (drawing.type === 'pen' && drawing.points.length >= 4) {
+                        return <path d={`M${drawing.points[0]},${drawing.points[1]} ` + drawing.points.slice(2).map((v,i) => i%2===0?`L${drawing.points[i+2]},${drawing.points[i+3]}`:'').join(' ')} stroke={annotationColor} strokeWidth={annotationStrokeWidth} vectorEffect="non-scaling-stroke" fill="none" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none" />;
+                      }
+                      return null;
+                    })()
+                  )
                 )}
-                <ExifPanel imageInfo={image} />
-              </div>
+              </svg>
+              {!demoMode && (
+                <button
+                  onClick={() => {
+                    removeImage(image.id);
+                  }}
+                  className={`absolute top-2 right-2 z-50 p-1.5 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100
+                    ${themeMode === 'dark' 
+                      ? 'bg-gray-800/90 text-gray-100 hover:bg-gray-700' 
+                      : 'bg-white/80 text-gray-700 hover:bg-white'}`}
+                  title="删除图片"
+                >
+                  <svg 
+                    className="w-5 h-5" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M6 18L18 6M6 6l12 12" 
+                    />
+                  </svg>
+                </button>
+              )}
+              <ExifPanel imageInfo={image} />
             </div>
           ))}
         </div>

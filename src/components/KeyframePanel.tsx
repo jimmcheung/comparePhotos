@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useKeyframeStore } from '../stores/keyframeStore';
 import type { Keyframe } from '../types/keyframe';
+import { useSettingsStore } from '../stores/settingsStore';
 
 const TOOLBAR_HEIGHT = 72;
 const TOOLBAR_RADIUS = 999;
@@ -11,6 +12,7 @@ const KeyframePanel: React.FC = () => {
     frameDuration, transitionDuration, transitionEasing,
     setFrameDuration, setTransitionDuration, setTransitionEasing
   } = useKeyframeStore();
+  const { themeMode } = useSettingsStore();
   const [shouldRender, setShouldRender] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
@@ -114,10 +116,18 @@ const KeyframePanel: React.FC = () => {
     width: 'fit-content',
     height: TOOLBAR_HEIGHT,
     borderRadius: TOOLBAR_RADIUS,
-    background: 'rgba(255,255,255,0.92)',
+    background: themeMode === 'dark' 
+      ? 'rgba(0, 0, 0, 0.92)' 
+      : (themeMode === 'green' || themeMode === 'blue' 
+        ? 'rgba(255, 255, 255, 0.25)' 
+        : 'rgba(255,255,255,0.92)'),
     backdropFilter: 'blur(16px) saturate(1.5)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-    border: '1.5px solid rgba(180,180,200,0.13)',
+    boxShadow: themeMode === 'dark' 
+      ? '0 8px 32px rgba(0,0,0,0.38)' 
+      : '0 8px 32px rgba(0,0,0,0.18)',
+    border: themeMode === 'dark' 
+      ? '1.5px solid rgba(80,80,100,0.18)' 
+      : '1.5px solid rgba(180,180,200,0.13)',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -134,7 +144,7 @@ const KeyframePanel: React.FC = () => {
     transition: 'opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1)',
     padding: '0 36px',
     boxSizing: 'border-box',
-    color: '#333',
+    color: themeMode === 'dark' ? '#e5e7eb' : '#333',
     cursor: 'default',
   };
 
@@ -155,12 +165,12 @@ const KeyframePanel: React.FC = () => {
             borderRadius: '50%',
             border: 'none',
             background: playing ? '#e6f0ff' : '#fff',
-            color: playing ? '#007AFF' : '#333',
+            color: playing ? '#2458d0' : '#333',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: 22,
-            boxShadow: playing ? '0 0 0 3px #007AFF66' : undefined,
+            boxShadow: playing ? '0 0 0 3px #2458d066' : undefined,
             cursor: 'pointer',
             marginRight: 24,
           }}
@@ -211,12 +221,12 @@ const KeyframePanel: React.FC = () => {
                 borderRadius: '50%',
                 border: 'none',
                 background: currentIdx === idx ? '#e6f0ff' : '#fff',
-                color: currentIdx === idx ? '#007AFF' : '#333',
+                color: currentIdx === idx ? '#2458d0' : '#333',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 18,
-                boxShadow: currentIdx === idx ? '0 0 0 3px #007AFF66' : undefined,
+                boxShadow: currentIdx === idx ? '0 0 0 3px #2458d066' : undefined,
                 cursor: 'pointer',
                 position: 'relative',
               }}
@@ -254,11 +264,20 @@ const KeyframePanel: React.FC = () => {
       {showSettings && (
         <div
           ref={settingsRef}
-          className="fixed min-w-[260px] max-w-[90vw] md:max-w-[400px] max-h-[80vh] overflow-y-auto rounded-3xl px-7 py-4 backdrop-blur-lg text-sm shadow-lg shadow-black/10 transition-all duration-300 scrollbar-hide pointer-events-auto select-none z-[2000] bg-white/80 text-gray-700 border border-gray-200"
+          className="fixed min-w-[260px] max-w-[90vw] md:max-w-[400px] max-h-[80vh] overflow-y-auto rounded-3xl px-7 py-4 backdrop-blur-lg text-sm shadow-lg shadow-black/10 transition-all duration-300 scrollbar-hide pointer-events-auto select-none z-[2000] border"
           style={{
             left: getPanelLeft() + ((panelRef.current?.offsetWidth || 0) / 2),
             top: getPanelTop() - 16,
             transform: 'translate(-50%, -100%)',
+            background: themeMode === 'dark' 
+              ? 'rgba(0, 0, 0, 0.92)' 
+              : (themeMode === 'green' || themeMode === 'blue' 
+                ? 'rgba(255, 255, 255, 0.25)' 
+                : 'rgba(255,255,255,0.92)'),
+            color: themeMode === 'dark' ? '#e5e7eb' : '#333',
+            borderColor: themeMode === 'dark' 
+              ? 'rgba(80,80,100,0.18)' 
+              : 'rgba(180,180,200,0.13)',
           }}
           onClick={e => e.stopPropagation()}
         >
@@ -268,17 +287,20 @@ const KeyframePanel: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setFrameDuration(1000)}
-                className={`px-4 py-2 rounded-lg font-medium border transition-all duration-200 focus:outline-none ${frameDuration===1000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                className={`font-medium border transition-all duration-200 focus:outline-none ${frameDuration===1000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                style={{ width: '100px', height: '36px', borderRadius: '18px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >短（1秒）</button>
               <button
                 type="button"
                 onClick={() => setFrameDuration(3000)}
-                className={`px-4 py-2 rounded-lg font-medium border transition-all duration-200 focus:outline-none ${frameDuration===3000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                className={`font-medium border transition-all duration-200 focus:outline-none ${frameDuration===3000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                style={{ width: '100px', height: '36px', borderRadius: '18px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >中（3秒）</button>
               <button
                 type="button"
                 onClick={() => setFrameDuration(5000)}
-                className={`px-4 py-2 rounded-lg font-medium border transition-all duration-200 focus:outline-none ${frameDuration===5000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                className={`font-medium border transition-all duration-200 focus:outline-none ${frameDuration===5000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                style={{ width: '100px', height: '36px', borderRadius: '18px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >长（5秒）</button>
             </div>
           </div>
@@ -288,17 +310,20 @@ const KeyframePanel: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTransitionDuration(500)}
-                className={`px-4 py-2 rounded-lg font-medium border transition-all duration-200 focus:outline-none ${transitionDuration===500 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                className={`font-medium border transition-all duration-200 focus:outline-none ${transitionDuration===500 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                style={{ width: '100px', height: '36px', borderRadius: '18px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >快（0.5秒）</button>
               <button
                 type="button"
                 onClick={() => setTransitionDuration(1000)}
-                className={`px-4 py-2 rounded-lg font-medium border transition-all duration-200 focus:outline-none ${transitionDuration===1000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                className={`font-medium border transition-all duration-200 focus:outline-none ${transitionDuration===1000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                style={{ width: '100px', height: '36px', borderRadius: '18px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >正常（1秒）</button>
               <button
                 type="button"
                 onClick={() => setTransitionDuration(3000)}
-                className={`px-4 py-2 rounded-lg font-medium border transition-all duration-200 focus:outline-none ${transitionDuration===3000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                className={`font-medium border transition-all duration-200 focus:outline-none ${transitionDuration===3000 ? 'bg-sky-500 text-white border-sky-500 shadow' : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-sky-100'}`}
+                style={{ width: '100px', height: '36px', borderRadius: '18px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >慢（3秒）</button>
             </div>
           </div>

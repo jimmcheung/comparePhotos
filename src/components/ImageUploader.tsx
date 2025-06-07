@@ -10,9 +10,11 @@ const NORMAL_IMAGE_EXT = /\.(jpg|jpeg|png|gif|webp|bmp)$/i;
 const SPECIAL_IMAGE_EXT = /\.(heic|heif)$/i;
 
 const ImageUploader: React.FC = () => {
-  const { darkMode, demoMode } = useSettingsStore();
+  const { themeMode, demoMode } = useSettingsStore();
   const { addImages, clearImages, removeImage, images, addImage } = useImageStore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const isDarkTheme = themeMode === 'dark';
+  const isSpecialTheme = themeMode === 'green' || themeMode === 'blue';
 
   // 格式转换状态
   const [showConversionModal, setShowConversionModal] = useState(false);
@@ -212,10 +214,11 @@ const ImageUploader: React.FC = () => {
               };
               input.click();
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200
-              ${darkMode 
-                ? 'bg-sky-500/20 text-gray-100 hover:bg-sky-500/30' 
-                : 'bg-sky-500/10 text-gray-700 hover:bg-sky-500/20'}`}
+            className={`px-7 py-3 rounded-full backdrop-blur-md transition-all duration-200 ${
+              isDarkTheme 
+                ? 'bg-[#2458d0] hover:bg-[#1c46af] text-white' 
+                : 'bg-[#2458d0] hover:bg-[#1c46af] text-white'
+            } font-medium text-sm scale-105`}
           >
             重新上传
           </button>
@@ -233,9 +236,7 @@ const ImageUploader: React.FC = () => {
               input.click();
             }}
             className={`p-2 rounded-lg font-medium transition-all duration-200
-              ${darkMode 
-                ? 'bg-sky-500/20 text-gray-100 hover:bg-sky-500/30' 
-                : 'bg-sky-500/10 text-gray-700 hover:bg-sky-500/20'}`}
+              ${isDarkTheme ? 'bg-sky-500/20 text-gray-100 hover:bg-sky-500/30' : 'bg-sky-500/10 text-gray-700 hover:bg-sky-500/20'}`}
             title="添加图片"
           >
             <svg 
@@ -252,11 +253,38 @@ const ImageUploader: React.FC = () => {
               />
             </svg>
           </button>
+          <button
+            onClick={clearImages}
+            className={`p-2 rounded-lg font-medium transition-all duration-200
+              ${isDarkTheme ? 'bg-sky-500/20 text-gray-100 hover:bg-sky-500/30' : 'bg-sky-500/10 text-gray-700 hover:bg-sky-500/20'}`}
+            title="清空图片"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
         </div>
       )}
+      
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${demoMode ? 'p-0' : ''}`}>
         {images.map((image) => (
-          <div key={image.id} className={`relative group aspect-[3/2] ${darkMode ? 'bg-black' : 'bg-gray-100'} rounded-lg overflow-hidden`}>
+          <div 
+            key={image.id} 
+            className="relative group aspect-[3/2] rounded-lg overflow-hidden"
+            style={{
+              backgroundColor: isDarkTheme ? '#1a1a1a' : '#f3f4f6' // #f3f4f6 is gray-100
+            }}
+          >
             <img
               src={image.url}
               alt={image.name}
@@ -268,21 +296,19 @@ const ImageUploader: React.FC = () => {
                 <button
                   onClick={() => removeImage(image.id)}
                   className={`absolute top-2 right-2 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                    ${darkMode 
-                      ? 'bg-gray-900/80 text-gray-100 hover:bg-gray-900' 
-                      : 'bg-white/80 text-gray-700 hover:bg-white'}`}
+                    ${isDarkTheme ? 'bg-gray-900/80 text-gray-100 hover:bg-gray-900' : 'bg-white/80 text-gray-700 hover:bg-white'}`}
                 >
-                  <svg 
-                    className="w-4 h-4" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M6 18L18 6M6 6l12 12" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
                 </button>
@@ -318,110 +344,147 @@ const ImageUploader: React.FC = () => {
     </div>
   );
 
-  return (
-    <>
-    <div className={`flex flex-col items-center justify-center min-h-screen ${
-      darkMode ? 'bg-black' : 'bg-gray-100'
-    } ${demoMode ? 'demo-mode' : 'pt-12'}`}>
-      <div className={`w-full max-w-4xl ${demoMode ? 'p-0 demo-content' : 'p-4 -mt-48'}`}>
-        {demoMode ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {images.map((image) => (
-              <div key={image.id} className={`relative aspect-[3/2] ${darkMode ? 'bg-black' : 'bg-gray-100'} rounded-lg overflow-hidden`}>
-                <img
-                  src={image.url}
-                  alt={image.name}
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-3 text-sm text-white bg-gradient-to-t from-black/70 to-transparent">
-                  <div className="space-y-1">
-                    {image.exif.Make !== 'Unknown' && image.exif.Model !== 'Unknown' && (
-                      <p>{image.exif.Make} {image.exif.Model}</p>
-                    )}
-                    {image.exif.LensModel !== 'Unknown' && (
-                      <p>{image.exif.LensModel}</p>
-                    )}
-                    {image.exif.FocalLength > 0 && (
-                      <p>{image.exif.FocalLength}mm</p>
-                    )}
-                    {image.exif.FNumber > 0 && (
-                      <p>f/{image.exif.FNumber}</p>
-                    )}
-                    {image.exif.ISO > 0 && (
-                      <p>{image.exif.ISO}</p>
-                    )}
-                    {image.exif.ExposureTime !== '0' && (
-                      <p>{formatShutterSpeed(image.exif.ExposureTime)}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <>
-            {isProcessing ? (
-              <div className="text-center">
-                <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>处理中...</p>
-              </div>
-            ) : images.length === 0 ? (
-              <div className="flex flex-col items-center justify-center">
-                <div
-                  className={`flex flex-col items-center justify-center w-[480px] h-[320px] border-4 border-dashed rounded-2xl p-8 cursor-pointer
-                    ${darkMode ? 'border-gray-800 text-gray-300 bg-black' : 'border-gray-300 text-gray-600'}
-                    transition-all duration-200 
-                    ${darkMode ? 'hover:border-sky-500/50 hover:bg-sky-500/10' : 'hover:border-sky-500/50 hover:bg-sky-500/5'}`}
-                  onClick={handleClick}
-                  onDrop={handleDrop}
-                  onDragOver={handleDragOver}
-                >
-                  <svg
-                    className={`mx-auto h-12 w-12 ${darkMode ? 'text-gray-600' : 'text-gray-500'}`}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+  // 处理初始上传区域的渲染
+  if (images.length === 0) {
+    return (
+      <>
+        <div className={`flex flex-col items-center justify-center min-h-screen ${demoMode ? 'demo-mode' : 'pt-12'}`}
+             style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+          <div className={`w-full max-w-4xl ${demoMode ? 'p-0 demo-content' : 'p-4 -mt-48'}`}>
+            {demoMode ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {images.map((image) => (
+                  <div key={image.id} className={`relative aspect-[3/2] rounded-lg overflow-hidden`}
+                       style={{ background: 'var(--bg-secondary)' }}>
+                    <img
+                      src={image.url}
+                      alt={image.name}
+                      className="w-full h-full object-contain"
                     />
-                  </svg>
-                  <h3 className="mt-4 text-base font-medium">点击或拖放图片到此处</h3>
-                  <p className={`mt-2 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>支持导入图片进行对比</p>
-                  <p className={`mt-1 text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>支持格式：JPG、PNG、GIF、WebP、HEIC等</p>
-                </div>
-                <div className={`mt-4 flex items-center text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <span>隐私声明：所有图片仅在您的浏览器中本地处理，不会上传到任何服务器</span>
-                </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-sm text-white bg-gradient-to-t from-black/70 to-transparent">
+                      <div className="space-y-1">
+                        {image.exif.Make !== 'Unknown' && image.exif.Model !== 'Unknown' && (
+                          <p>{image.exif.Make} {image.exif.Model}</p>
+                        )}
+                        {image.exif.LensModel !== 'Unknown' && (
+                          <p>{image.exif.LensModel}</p>
+                        )}
+                        {image.exif.FocalLength > 0 && (
+                          <p>{image.exif.FocalLength}mm</p>
+                        )}
+                        {image.exif.FNumber > 0 && (
+                          <p>f/{image.exif.FNumber}</p>
+                        )}
+                        {image.exif.ISO > 0 && (
+                          <p>{image.exif.ISO}</p>
+                        )}
+                        {image.exif.ExposureTime !== '0' && (
+                          <p>{formatShutterSpeed(image.exif.ExposureTime)}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-              renderImageList()
+              <>
+                {isProcessing ? (
+                  <div className="text-center">
+                    <p style={{ color: 'var(--text-secondary)' }}>处理中...</p>
+                  </div>
+                ) : images.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center">
+                    <div
+                      className="flex flex-col items-center justify-center w-[480px] h-[320px] border-4 border-dashed rounded-2xl p-8 cursor-pointer
+                        transition-all duration-200"
+                      style={{
+                        borderColor: themeMode === 'light' 
+                          ? '#cdcdcd' 
+                          : themeMode === 'dark'
+                            ? 'rgb(140 140 140 / 50%)'
+                            : 'var(--border-color)',
+                        background: themeMode === 'light' 
+                          ? '#f9fafb' 
+                          : (themeMode === 'green' || themeMode === 'blue' 
+                            ? 'var(--control-bg)' 
+                            : 'var(--bg-secondary)'),
+                        color: 'var(--text-primary)',
+                      }}
+                      onClick={handleClick}
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                    >
+                      <svg
+                        className="mx-auto h-12 w-12"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                        />
+                      </svg>
+                      <h3 className="mt-4 text-base font-medium" style={{ color: 'var(--text-primary)' }}>点击或拖放图片到此处</h3>
+                      <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>支持导入图片进行对比</p>
+                      <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)', opacity: 0.7 }}>支持格式：JPG、PNG、GIF、WebP、HEIC等</p>
+                    </div>
+                    <div className="mt-4 flex items-center text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span>隐私声明：所有图片仅在您的浏览器中本地处理，不会上传到任何服务器</span>
+                    </div>
+                  </div>
+                ) : (
+                  renderImageList()
+                )}
+              </>
             )}
-          </>
+          </div>
+        </div>
+
+        {/* 格式转换确认弹窗 */}
+        {showConversionModal && (
+          <FormatConversionModal
+            isOpen={showConversionModal}
+            files={filesToConvert}
+            onClose={closeConversionModal}
+            onConfirm={performConversion}
+            onCancel={cancelConversion}
+            isConverting={isConverting}
+            outputFormat={outputFormat}
+            setOutputFormat={setOutputFormat}
+            quality={quality}
+            setQuality={setQuality}
+          />
         )}
-      </div>
-    </div>
+      </>
+    );
+  }
+
+  // 已有图片的情况下渲染
+  return (
+    <div>
+      {renderImageList()}
       
-      {/* 格式转换确认弹窗 */}
       <FormatConversionModal
         isOpen={showConversionModal}
-        files={filesToConvert}
         onClose={closeConversionModal}
-        onConfirm={(format, q) => {
-          setOutputFormat(format);
-          setQuality(q);
-          setTimeout(() => performConversion(), 0);
-        }}
+        onConfirm={performConversion}
         onCancel={cancelConversion}
+        files={filesToConvert}
         isConverting={isConverting}
+        outputFormat={outputFormat}
+        setOutputFormat={setOutputFormat}
+        quality={quality}
+        setQuality={setQuality}
       />
-    </>
+    </div>
   );
 };
 

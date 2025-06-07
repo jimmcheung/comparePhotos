@@ -23,12 +23,16 @@ export interface DrawingOptions {
   width: number;
 }
 
+export type ThemeMode = 'light' | 'dark' | 'green' | 'blue';
+
 export interface Settings {
-  darkMode: boolean;
+  themeMode: ThemeMode;
   syncZoom: boolean;
   syncDraw: boolean;
   presentationMode: boolean;
   visibleExifFields: string[];
   showZoomControls: boolean;
   showExifInfo: boolean;
+  borderRadius: string;
+  gridGap: string;
 } 
