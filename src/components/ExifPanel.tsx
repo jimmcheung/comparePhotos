@@ -8,7 +8,7 @@ interface Props {
 }
 
 const ExifPanel: React.FC<Props> = ({ imageInfo }) => {
-  const { exifSettings, themeMode } = useSettingsStore();
+  const { exifSettings, themeMode, showExifInfo } = useSettingsStore();
   const [resolution, setResolution] = useState<string>('');
   const isDarkTheme = themeMode === 'dark';
   const isSpecialTheme = themeMode === 'green' || themeMode === 'blue';
@@ -21,6 +21,9 @@ const ExifPanel: React.FC<Props> = ({ imageInfo }) => {
     };
     img.src = imageInfo.url;
   }, [imageInfo.url]);
+
+  // 如果 EXIF 信息显示被关闭，直接返回 null
+  if (!showExifInfo) return null;
 
   // 过滤出需要显示的 EXIF 信息，排除无效值
   const visibleExif = Object.entries({
