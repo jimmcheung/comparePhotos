@@ -2,7 +2,7 @@
 
 一个用于对比多张照片细节的 Web 应用，支持图片同步缩放、平移、EXIF 信息显示等功能。
 
-**在线体验：** [https://jimmcheung.github.io/comparePhotos/](https://jimmcheung.github.io/comparePhotos/)
+**在线体验：** [https://cp.jimplay.cn](https://cp.jimplay.cn)
 
 ## 功能特点
 
@@ -127,6 +127,42 @@ npm run build
 
 当前部署地址：[https://jimmcheung.github.io/comparePhotos/](https://jimmcheung.github.io/comparePhotos/)
 
+### 服务器部署
+1. 创建项目目录：
+```bash
+sudo mkdir -p /var/www/comparePhotos
+sudo chown -R $USER:$USER /var/www/comparePhotos
+cd /var/www/comparePhotos
+git clone https://github.com/jimmcheung/comparePhotos.git .
+```
+
+2. 安装依赖并构建：
+```bash
+npm install
+npm run build
+```
+
+3. 配置 Nginx：
+```bash
+# 复制 Nginx 配置文件
+sudo cp deploy/nginx/cp.jimplay.cn.conf /etc/nginx/sites-available/cp.jimplay.cn
+
+# 创建符号链接
+sudo ln -s /etc/nginx/sites-available/cp.jimplay.cn /etc/nginx/sites-enabled/
+
+# 测试配置
+sudo nginx -t
+
+# 重启 Nginx
+sudo systemctl restart nginx
+```
+
+4. SSL 证书（可选）：
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d cp.jimplay.cn
+```
+
 ### Vercel
 1. 注册 Vercel 账号
 2. 导入 GitHub 仓库
@@ -135,7 +171,7 @@ npm run build
 ### 自建服务器
 1. 构建项目：`npm run build`
 2. 将 `dist` 目录下的文件部署到服务器
-3. 配置 Nginx 或其他 Web 服务器
+3. 配置 Nginx 或其他 Web 服务器（配置文件在 `deploy/nginx` 目录）
 
 ## 贡献
 
