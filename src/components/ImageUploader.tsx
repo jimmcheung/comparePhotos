@@ -395,7 +395,7 @@ const ImageUploader: React.FC = () => {
                 ) : images.length === 0 ? (
                   <div className="flex flex-col items-center justify-center">
                     <div
-                      className="flex flex-col items-center justify-center w-[480px] h-[320px] border-4 border-dashed rounded-2xl p-8 cursor-pointer
+                      className="flex flex-col items-center justify-center w-[521px] h-[360px] border-4 border-dashed rounded-2xl p-8 cursor-pointer
                         transition-all duration-200"
                       style={{
                         borderColor: themeMode === 'light' 
