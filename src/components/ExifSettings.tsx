@@ -21,7 +21,8 @@ const exifLabels: Record<string, string> = {
 };
 
 const ExifSettings: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { darkMode, exifSettings, toggleExifSetting, toggleAllExifSettings } = useSettingsStore();
+  const { themeMode, exifSettings, toggleExifSetting, toggleAllExifSettings } = useSettingsStore();
+  const isDarkTheme = themeMode === 'dark';
 
   if (!isOpen) return null;
 
@@ -34,12 +35,12 @@ const ExifSettings: React.FC<Props> = ({ isOpen, onClose }) => {
     <div 
       className="absolute top-full right-0 mt-2 p-4 rounded-lg shadow-lg w-64 backdrop-blur-md"
       style={{
-        backgroundColor: darkMode ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: isDarkTheme ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
       }}
     >
       {/* 全选/全不选按钮 */}
       <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-        <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        <span className={`text-sm font-medium ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
           快捷操作
         </span>
         <div className="flex space-x-2">
@@ -47,8 +48,8 @@ const ExifSettings: React.FC<Props> = ({ isOpen, onClose }) => {
             onClick={() => toggleAllExifSettings(true)}
             className={`px-2 py-1 text-xs rounded ${
               isAllSelected 
-                ? darkMode ? 'bg-sky-600 text-white' : 'bg-sky-500 text-white' 
-                : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? isDarkTheme ? 'bg-sky-600 text-white' : 'bg-sky-500 text-white' 
+                : isDarkTheme ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             全选
@@ -57,8 +58,8 @@ const ExifSettings: React.FC<Props> = ({ isOpen, onClose }) => {
             onClick={() => toggleAllExifSettings(false)}
             className={`px-2 py-1 text-xs rounded ${
               isNoneSelected 
-                ? darkMode ? 'bg-sky-600 text-white' : 'bg-sky-500 text-white' 
-                : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? isDarkTheme ? 'bg-sky-600 text-white' : 'bg-sky-500 text-white' 
+                : isDarkTheme ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             全不选
@@ -72,7 +73,7 @@ const ExifSettings: React.FC<Props> = ({ isOpen, onClose }) => {
             key={key} 
             className="flex items-center justify-between cursor-pointer"
           >
-            <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <span className={`text-sm ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
               {exifLabels[key] || key}
             </span>
             <div className="relative">
@@ -84,7 +85,7 @@ const ExifSettings: React.FC<Props> = ({ isOpen, onClose }) => {
               />
               <div className={`
                 relative w-10 h-5 rounded-full transition-colors duration-200
-                ${darkMode 
+                ${isDarkTheme 
                   ? exifSettings[key] ? 'bg-sky-500' : 'bg-gray-700'
                   : exifSettings[key] ? 'bg-sky-500' : 'bg-gray-300'}
                 peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50

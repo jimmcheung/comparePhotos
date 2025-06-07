@@ -28,6 +28,7 @@ interface SettingsStore extends Settings {
   borderRadius: string;
   gridGap: string;
   setThemeMode: (mode: ThemeMode) => void;
+  toggleThemeMode: () => void;
   toggleSyncZoom: () => void;
   toggleSyncDraw: () => void;
   togglePresentationMode: () => void;
@@ -69,6 +70,9 @@ export const useSettingsStore = create<SettingsStore>()(
   borderRadius: '0.5rem',
   gridGap: '1rem',
   setThemeMode: (mode) => set({ themeMode: mode }),
+  toggleThemeMode: () => set((state) => ({ 
+    themeMode: state.themeMode === 'dark' ? 'light' : 'dark' 
+  })),
   toggleSyncZoom: () => set((state) => ({ syncZoom: !state.syncZoom })),
   toggleSyncDraw: () => set((state) => ({ syncDraw: !state.syncDraw })),
   togglePresentationMode: () => set((state) => ({ presentationMode: !state.presentationMode })),

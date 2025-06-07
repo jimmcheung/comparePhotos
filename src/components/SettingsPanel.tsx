@@ -14,21 +14,23 @@ const exifFields = [
 
 const SettingsPanel: React.FC = () => {
   const {
-    darkMode,
+    themeMode,
     syncZoom,
     syncDraw,
     presentationMode,
     visibleExifFields,
-    toggleDarkMode,
+    toggleThemeMode,
     toggleSyncZoom,
     toggleSyncDraw,
     togglePresentationMode,
     toggleExifField
   } = useSettingsStore();
 
+  const isDarkTheme = themeMode === 'dark';
+
   return (
     <div className={`p-4 rounded-lg shadow-lg ${
-      darkMode ? 'bg-black text-gray-100' : 'bg-white text-gray-800'
+      isDarkTheme ? 'bg-black text-gray-100' : 'bg-white text-gray-800'
     }`}>
       <h3 className="text-lg font-semibold mb-4">设置</h3>
       
@@ -38,17 +40,17 @@ const SettingsPanel: React.FC = () => {
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
-              checked={darkMode}
-              onChange={toggleDarkMode}
+              checked={isDarkTheme}
+              onChange={toggleThemeMode}
               className="sr-only peer"
             />
             <div className={`relative w-14 h-7 rounded-full transition-colors duration-200
-              ${darkMode ? 'bg-sky-500' : 'bg-gray-300'} 
+              ${isDarkTheme ? 'bg-sky-500' : 'bg-gray-300'} 
               cursor-pointer
               peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50`}
             >
               <div className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200
-                ${darkMode ? 'translate-x-7' : 'translate-x-0'}`} 
+                ${isDarkTheme ? 'translate-x-7' : 'translate-x-0'}`} 
               />
             </div>
           </label>
@@ -64,7 +66,7 @@ const SettingsPanel: React.FC = () => {
               className="sr-only peer"
             />
             <div className={`relative w-14 h-7 rounded-full transition-colors duration-200
-              ${syncZoom ? 'bg-sky-500' : darkMode ? 'bg-gray-800' : 'bg-gray-300'} 
+              ${syncZoom ? 'bg-sky-500' : isDarkTheme ? 'bg-gray-800' : 'bg-gray-300'} 
               cursor-pointer
               peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50`}
             >
@@ -85,7 +87,7 @@ const SettingsPanel: React.FC = () => {
               className="sr-only peer"
             />
             <div className={`relative w-14 h-7 rounded-full transition-colors duration-200
-              ${syncDraw ? 'bg-sky-500' : darkMode ? 'bg-gray-800' : 'bg-gray-300'} 
+              ${syncDraw ? 'bg-sky-500' : isDarkTheme ? 'bg-gray-800' : 'bg-gray-300'} 
               cursor-pointer
               peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50`}
             >
@@ -106,7 +108,7 @@ const SettingsPanel: React.FC = () => {
               className="sr-only peer"
             />
             <div className={`relative w-14 h-7 rounded-full transition-colors duration-200
-              ${presentationMode ? 'bg-sky-500' : darkMode ? 'bg-gray-800' : 'bg-gray-300'} 
+              ${presentationMode ? 'bg-sky-500' : isDarkTheme ? 'bg-gray-800' : 'bg-gray-300'} 
               cursor-pointer
               peer-focus:ring-2 peer-focus:ring-sky-400 peer-focus:ring-opacity-50`}
             >
