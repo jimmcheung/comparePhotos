@@ -118,6 +118,40 @@ npm run build
   - 弹窗位置在关键帧面板正上方，支持点击外部关闭
 - 体验与交互全面升级，所有状态与UI联动，动画流畅
 
+## 自动部署
+
+本项目使用 GitHub Actions 实现自动部署，每次推送到 main 分支时会自动：
+1. 构建项目
+2. 部署到 GitHub Pages
+3. 部署到生产服务器
+
+### 设置自动部署
+
+1. 在服务器上运行设置脚本：
+```bash
+chmod +x scripts/setup-deploy.sh
+./scripts/setup-deploy.sh
+```
+
+2. 在 GitHub 仓库设置中添加以下 Secrets：
+- `SERVER_HOST`: 服务器 IP 或域名
+- `SERVER_USERNAME`: deployer
+- `SERVER_SSH_KEY`: 设置脚本生成的私钥
+
+3. 确保服务器上的目录权限正确：
+```bash
+sudo chown -R deployer:deployer /var/www/comparePhotos
+```
+
+### 手动触发部署
+
+推送代码到 main 分支会自动触发部署：
+```bash
+git push origin main
+```
+
+也可以在 GitHub Actions 页面手动触发部署。
+
 ## 部署
 
 ### GitHub Pages
