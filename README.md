@@ -30,7 +30,7 @@
   - 弹出位置在关键帧面板正上方，点击外部可关闭。
   - 停留时间、过渡时间均为现代按钮组切换，选中高亮。
   - 过渡时间选项：快（0.5秒）、正常（1秒，默认）、慢（3秒）。
-  - 过渡动画形式固定为"缓入缓出"，不可更改。
+  - 过渡动画形式固定为"缓入缓出"。
   - 样式与显示设置面板风格统一，圆角毛玻璃弹窗。
 
 ## 技术栈
@@ -102,13 +102,13 @@ npm run build
 
 ## 更新日志
 
-### v1.1.9 (2024-06-XX)
+### v1.1.9 (2024-06-06)
 - 更新项目名称为 ComparePhotos
 - 统一所有文件中的项目名称引用
 - 更新 GitHub 仓库链接和部署地址
 - 优化文档结构和说明
 
-### v1.1.8 (2024-06-XX)
+### v1.1.8 
 - 新增关键帧功能：支持多帧缩放/平移动画，自动记录、平滑切换、快捷键切换与自动播放
 - 关键帧时间设置面板UI与功能优化：
   - 样式与显示设置面板统一，现代毛玻璃圆角弹窗
@@ -118,94 +118,11 @@ npm run build
   - 弹窗位置在关键帧面板正上方，支持点击外部关闭
 - 体验与交互全面升级，所有状态与UI联动，动画流畅
 
-## 自动部署
-
-本项目使用 GitHub Actions 实现自动部署，每次推送到 main 分支时会自动：
-1. 构建项目
-2. 部署到 GitHub Pages
-3. 部署到生产服务器
-
-### 设置自动部署
-
-1. 在服务器上运行设置脚本：
-```bash
-chmod +x scripts/setup-deploy.sh
-./scripts/setup-deploy.sh
-```
-
-2. 在 GitHub 仓库设置中添加以下 Secrets：
-- `SERVER_HOST`: 服务器 IP 或域名
-- `SERVER_USERNAME`: deployer
-- `SERVER_SSH_KEY`: 设置脚本生成的私钥
-
-3. 确保服务器上的目录权限正确：
-```bash
-sudo chown -R deployer:deployer /var/www/comparePhotos
-```
-
-### 手动触发部署
-
-推送代码到 main 分支会自动触发部署：
-```bash
-git push origin main
-```
-
-也可以在 GitHub Actions 页面手动触发部署。
-
-## 部署
 
 ### GitHub Pages
-1. 在 GitHub 创建仓库
-2. 推送代码到仓库
-3. 在仓库设置中启用 GitHub Pages
 
 当前部署地址：[https://jimmcheung.github.io/comparePhotos/](https://jimmcheung.github.io/comparePhotos/)
 
-### 服务器部署
-1. 创建项目目录：
-```bash
-sudo mkdir -p /var/www/comparePhotos
-sudo chown -R $USER:$USER /var/www/comparePhotos
-cd /var/www/comparePhotos
-git clone https://github.com/jimmcheung/comparePhotos.git .
-```
-
-2. 安装依赖并构建：
-```bash
-npm install
-npm run build
-```
-
-3. 配置 Nginx：
-```bash
-# 复制 Nginx 配置文件
-sudo cp deploy/nginx/cp.jimplay.cn.conf /etc/nginx/sites-available/cp.jimplay.cn
-
-# 创建符号链接
-sudo ln -s /etc/nginx/sites-available/cp.jimplay.cn /etc/nginx/sites-enabled/
-
-# 测试配置
-sudo nginx -t
-
-# 重启 Nginx
-sudo systemctl restart nginx
-```
-
-4. SSL 证书（可选）：
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d cp.jimplay.cn
-```
-
-### Vercel
-1. 注册 Vercel 账号
-2. 导入 GitHub 仓库
-3. 自动部署
-
-### 自建服务器
-1. 构建项目：`npm run build`
-2. 将 `dist` 目录下的文件部署到服务器
-3. 配置 Nginx 或其他 Web 服务器（配置文件在 `deploy/nginx` 目录）
 
 ## 贡献
 
@@ -224,4 +141,3 @@ MIT License
 
 - B站：[@熊熊Bearie](https://space.bilibili.com/96625571)
 
-测试 GitHub Actions 自动部署
